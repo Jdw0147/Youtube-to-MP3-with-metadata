@@ -24,4 +24,15 @@ def download_youtube_audio(youtube_url, output_filename="temp.m4a"):
         ydl.download([youtube_url])
     print("[+] Download complete.")
 
-    
+    # Function that converts the m4a file into an mp3 file
+    def to_mp3(input_file, output_file="download.mp3"):
+        print("[*] Converting to mp3...")
+        subprocess.run([
+            "ffmpeg", "-y",
+            "-i", input_file,
+            "-vn",
+            "-ar", "44100",
+            "-ac", "2",
+            "-b:a", "192k",
+            output_file
+        ])
