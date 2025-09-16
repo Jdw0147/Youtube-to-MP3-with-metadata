@@ -17,3 +17,11 @@ def download_youtube_audio(youtube_url, output_filename="temp.m4a"):
             'preferredquality': '192',
         }]
     }
+
+    # Downloading process
+    print("[*] Downloading audio from Youtube...")
+    with YoutubeDl(ydl_opts) as ydl:
+        ydl.download([youtube_url])
+    print("[+] Download complete.")
+
+    
