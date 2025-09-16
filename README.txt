@@ -45,4 +45,24 @@ Don't forget to install the other 2 packages!
 - 'pip install mutagen'
 
 Beginning the project
-To start the project, I insr
+To start the project, I imported external dependencies
+- os
+- subprocesses (for ffmpeg)
+- YoutubeDl (from yt_dlp)
+- MP3 & ID3 (from mutagen.mp3 & mutagen.id3 respectively)
+
+Afterwards I created the downlad_youtube_audio function
+This function takes in the link from youtube and outputs a file called
+"temp.m4a"  This file is the m4a file that we download from youtube 
+before we make the changed.
+When downloaidng the file, we use ytdl to customize some options for the download
+- 'format: bestaudio/best' simply makes sure we are downloading the best audio possible
+from the video (m4a)
+- 'outtmpl: output_filename' is simply saying the name the file will have after being converted to an m4a file
+- 'quiet: False' shows the download progress
+- The postprocessors are run after the video/audio is downloaded
+- What these postprocessors are doing specifically is directing the program on how to output the file.
+'FFmpegExtractAudio' signifies that we just want the audio
+'preferredcodec' defines what audio format we want it in (m4a is best from youtube)
+'192' is the aimed kbps quality of the audio
+
