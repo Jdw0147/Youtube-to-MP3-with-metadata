@@ -1,7 +1,7 @@
 # Imports
 import os
 import subprocess # To run ffmpeg
-from yt_dlp import YoutubeDl # To download YouTube Audio
+from yt_dlp import YoutubeDL # To download YouTube Audio
 from mutagen.mp3 import MP3 # To edit MP3 metadata
 from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
 
@@ -20,7 +20,7 @@ def download_youtube_audio(youtube_url, output_filename="temp.m4a"):
 
     # Downloading process
     print("[*] Downloading audio from Youtube...")
-    with YoutubeDl(ydl_opts) as ydl:
+    with YoutubeDL(ydl_opts) as ydl:
         ydl.download([youtube_url]) # Downloading the video (youtube_url) and applying the options (ydl_opts)
     print("[+] Download complete.")
 
