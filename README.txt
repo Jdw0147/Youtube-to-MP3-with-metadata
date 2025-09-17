@@ -81,6 +81,8 @@ metadata for the song
 - Album name
 - Year released
 - Genre
+- Track Number
+- Lyrics
 - Cover Image
 Every field is optional in case you do not want to give your file information and you
 simply want to download it.

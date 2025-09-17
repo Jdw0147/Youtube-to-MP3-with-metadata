@@ -3,7 +3,7 @@ import os
 import subprocess # To run ffmpeg
 from yt_dlp import YoutubeDl # To download YouTube Audio
 from mutagen.mp3 import MP3 # To edit MP3 metadata
-from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON, APIC # ID3 tag types
+from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
 
 # Downloading a Youtube video from a link
 def download_youtube_audio(youtube_url, output_filename="temp.m4a"):
@@ -54,8 +54,12 @@ def add_metadata(mp3_file, metadata):
     audio.tags.add(TALB(encoding=3, text=metadata["album"])) # Album name
     audio.tags.add(TDRC(encoding=3, text=metadata["year"])) # Year of release
     audio.tags.add(TCON(encoding=3, text=metadata["genre"])) # Genre
+    audio.tags.add(TRCK(encoding=3, text=metadata["track_number"])) # Track number
 
-    # Adding album art if available
+    # Lyrics
+    audio.tags.add(USLT(encoding=3, lang='eng', desc='Lyrics', text=metadata["lyrics"]))
+
+    # Album Art
     with open(metadata["cover_art_path"], 'rb') as albumart:
         audio.tags.add(APIC(
             encoding=3,
@@ -86,6 +90,8 @@ def main():
         "album": input("Album Name: "),
         "year": input("Year of Release: "),
         "genre": input("Genre: "),
+        "track_number": input("Track Number (e.g. 1 or 1/12): "),
+        "lyrics": input("Lyrics (paste full lyrics or leave blank): "),
         "cover_art_path": input("Path to Cover Art Image: ")
     }
 
