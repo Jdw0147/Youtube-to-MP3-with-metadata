@@ -4,13 +4,15 @@ import subprocess # To run ffmpeg
 from yt_dlp import YoutubeDL # To download YouTube Audio
 from mutagen.mp3 import MP3 # To edit MP3 metadata
 from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 # Downloading a Youtube video from a link
 def download_youtube_audio(youtube_url, output_filename="temp"):
     ydl_opts = {
         'format': 'bestaudio/best', # Downloading the best audio quality available
         'outtmpl': output_filename, # Setting the output filename
-        'quiet': False, # To show download progress
+        'quiet': True, # Not showing download process
         'postprocessors': [{    # Done after downloading
             'key': 'FFmpegExtractAudio', # Extract just audio using ffmpeg
             'preferredcodec': 'm4a',    # Specify to convert to m4a
