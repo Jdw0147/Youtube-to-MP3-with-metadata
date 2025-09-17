@@ -1,12 +1,16 @@
-My Process Making A Youtube to MP3 converter with customizable metadata
+Youtube to MP3 converter with customizable metadata
+With this script you can download audio from any youtube video, convert it to an
+mp3 file, add custom metadata such as song title, artist name, album art, etc, and
+save the mp3 with your custom metadata to your device to be imported to spotify/apple
+music.
 
 Inspiration:  I love music and one of my favorite activites is finding music 
-from artists that I like that aren't on streaming.  Weather it be a live recording
+from artists that I like that aren't on streaming.  Whether it be a live recording
 or an unreleased demo, it always felt like I was uncovering a hidden side to the 
 musicians whose music I already loved.  One thing that became a pain though was 
-downloading them and having to mannually enetr all of the information on
+downloading them and having to mannually enter all of the information on
 Groove Music (Windows media player's music service at the time).  There
-would be random bugs and it was a hassle to downlaod files, then locate them and 
+would be random bugs and it was a hassle to download files, then locate them and 
 find them on a different software then resave them and finally see them on spotify.
 So to make this task easier, I wanted to make a program where the file's metadata can
 be edited to include all of the nessecary information(song name, artist, etc) before
@@ -51,18 +55,32 @@ To start the project, I imported external dependencies
 - YoutubeDl (from yt_dlp)
 - MP3 & ID3 (from mutagen.mp3 & mutagen.id3 respectively)
 
-Afterwards I created the downlad_youtube_audio function
+Afterwards I created the download_youtube_audio function
 This function takes in the link from youtube and outputs a file called
 "temp.m4a"  This file is the m4a file that we download from youtube 
 before we make the changed.
 When downloaidng the file, we use ytdl to customize some options for the download
 - 'format: bestaudio/best' simply makes sure we are downloading the best audio possible
 from the video (m4a)
-- 'outtmpl: output_filename' is simply saying the name the file will have after being converted to an m4a file
+- 'outtmpl: output_filename' is simply saying the name the file will have after being 
+converted to an m4a file
 - 'quiet: False' shows the download progress
-- The postprocessors are run after the video/audio is downloaded
-- What these postprocessors are doing specifically is directing the program on how to output the file.
-'FFmpegExtractAudio' signifies that we just want the audio
-'preferredcodec' defines what audio format we want it in (m4a is best from youtube)
-'192' is the aimed kbps quality of the audio
+The postprocessors are run after the video/audio is downloaded
+What these postprocessors are doing specifically is directing the program on how to output the file.
+- 'FFmpegExtractAudio' signifies that we just want the audio
+- 'preferredcodec' defines what audio format we want it in (m4a is best from youtube)
+- '192' is the aimed kbps quality of the audio
 
+After downloading the youtube video as an m4a file, the 'to_mp3' function converts the m4a audio 
+file into an mp3.
+
+After we have the mp3, the 'add_metadata' function will promt the user to input the
+metadata for the song
+- Song name
+- Artist name
+- Album name
+- Year released
+- Genre
+- Cover Image
+Every field is optional in case you do not want to give your file information and you
+simply want to download it.
