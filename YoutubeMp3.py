@@ -51,7 +51,7 @@ def add_metadata(mp3_file, metadata):
     # Adding metadata (standard ID3 tags)
     audio.tags.add(TIT2(encoding=3, text=metadata["title"])) # Song title
     audio.tags.add(TPE1(encoding=3, text=metadata["artist"])) # Artist name
-    if metadata["album_artist"].strip():
+    if metadata["album_artist"].strip():    # Only add album artist if provided
         audio.tags.add(TPE2(encoding=3, text=metadata["album_artist"])) # Album artist
     audio.tags.add(TALB(encoding=3, text=metadata["album"])) # Album name
     audio.tags.add(TDRC(encoding=3, text=metadata["year"])) # Year of release
