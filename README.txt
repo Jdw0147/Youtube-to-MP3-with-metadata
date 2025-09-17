@@ -79,6 +79,7 @@ metadata for the song
 - Song name
 - Artist name
 - Album name
+- Album artist
 - Year released
 - Genre
 - Track Number
