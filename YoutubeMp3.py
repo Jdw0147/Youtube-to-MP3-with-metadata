@@ -75,7 +75,7 @@ def add_metadata(mp3_file, metadata):
             data=albumart.read()
         ))
 
-        audio.save() # Save the updated mp3 file
+        audio.save(v2_version=3) # Save the updated mp3 file
         print("[+] Metadata added.")
 
 
@@ -87,7 +87,7 @@ class YoutubeMp3GUI:
 
         # Input fields for GUI stored in a dictionary
         self.fields = {
-            "Youtube URL": tk.Entry(root, width=50),
+            "YouTube URL": tk.Entry(root, width=50),
             "Title": tk.Entry(root, width=50),
             "Artist": tk.Entry(root, width=50),
             "Album": tk.Entry(root, width=50),
@@ -143,8 +143,10 @@ class YoutubeMp3GUI:
 
     # Main process logic
     def process(self):
+        print("[DEBUG] Process started")
+        youtube_url = self.fields["YouTube URL"].get().strip()
+        print(f"[DEBUG] URL Entered: '{youtube_url}'")
         try:
-            youtube_url = self.fields["YouTube URL"].get().strip()
             if not youtube_url:
                 raise ValueError("YouTube URL is required.")
             print("YouTube URL:", youtube_url)  # Debug line
