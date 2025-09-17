@@ -37,7 +37,9 @@ def to_mp3(input_file, output_file="download.mp3"):
         "-ac", "2", # Set number of audio channels
         "-b:a", "192k", # Set audio bitrate
         output_file
-    ])
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL # Hides ffmpeg output
+    )
+    
 
     print("[+] Conversion complete.")
 
@@ -76,39 +78,120 @@ def add_metadata(mp3_file, metadata):
         audio.save() # Save the updated mp3 file
         print("[+] Metadata added.")
 
-# Main
-def main():
-    # Getting url from user
-    youtube_url = input("Enter the Youtube URL: ").strip()
 
-    # Downloading the audio from the youtube video
-    download_youtube_audio(youtube_url)
+# GUI Interface
+class YoutubeMp3GUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Youtube to MP3 with customizable metadata")
 
-    # Converting downloaded m4a file to mp3
-    to_mp3("temp.m4a", "download.mp3")
+        # Input fields for GUI stored in a dictionary
+        self.fields = {
+            "Youtube URL": tk.Entry(root, width=50),
+            "Title": tk.Entry(root, width=50),
+            "Artist": tk.Entry(root, width=50),
+            "Album": tk.Entry(root, width=50),
+            "Album Artist": tk.Entry(root, width=50),
+            "Year": tk.Entry(root, width=50),
+            "Genre": tk.Entry(root, width=50),
+            "Track Number": tk.Entry(root, width=50),
+            "Lyrics": tk.Text(root, width=50, height=10),
+        }
 
-    # Metadata to be added to the mp3 file
-    metadata = {
-        "title": input("Song Title: "),
-        "artist": input("Artist Name: "),
-        "album": input("Album Name: "),
-        "album_artist": input("Album Artist:  "),
-        "year": input("Year of Release: "),
-        "genre": input("Genre: "),
-        "track_number": input("Track Number (e.g. 1 or 1/12): "),
-        "lyrics": input("Lyrics (paste full lyrics or leave blank): "),
-        "cover_art_path": input("Path to Cover Art Image: ")
-    }
+        # Layout input fields on the GUI
+        row = 0
+        for label, widget in self.fields.items():
+            tk.Label(root, text=label).grid(row=row, column=0, sticky="w", padx=10, pady=2)
+            widget.grid(row=row, column=1, padx=10, pady=2)
+            row += 1
 
-    # Adding metadata to the mp3 file
-    add_metadata("download.mp3", metadata)
+        # Cover Art file selection (file dialog)
+        self.cover_art_path = tk.StringVar()
+        tk.Label(root, text="Cover Art:").grid(row=row, clumn=0, sticky="w", padx=10, pady=2)
+        tk.Entry(root, textvariable=self.cover_art_path, width=40).grid(row=row, column=1, sticky="w", padx=10)
+        tk.Button(root, text="Browse", command=self.select_cover_art).grid(row=row, column=2)
+        row += 1
 
-    print("\nAll done! Your mp3 file is ready as 'download.mp3'.\n")
+        # Output Directory selection (folder dialog)
+        self.output_dir = tk.StringVar()
+        tk.Label(root, text="Save To Folder:").grid(row=row, column=0, sticky="w", padx=10, pady=2)
+        tk.Entry(root, textvariable=self.output_dir, width=40).grid(row=row, column=1)
+        tk.Button(root, text="Browse", command=self.select_output_directory).grid(row=row, column=2)
+        row += 1
 
-    # Cleanup temp file
-    if os.path.exists("temp.m4a"):
-        os.remove("temp.m4a")
+        # Output filename entry
+        self.output_filename = tk.Entry(root, width=50)
+        tk.Label(root, text="Output Filename (no extension):").grid(row=row, column=0, sticky="w", padx=10, pady=2)
+        self.output_filename.grid(row=row, column=1, padx=10, pady=2)
+        row += 1
+
+        # Download Button
+        tk.Button(root, text="Download and Convert", command=self.process).grid(row=row, column=1, pady=10)
+
+
+    # Cover Art File Selection Dialog
+    def select_cover_art(self):
+        path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg *.jpeg *.png")])
+        if path:
+            self.cover_art_path.set(path)
+
+    # Output Directory Selection Dialog
+    def select_output_directory(self):
+        path = filedialog.askdirectory()
+        if path:
+            self.output_dir.set(path)
+
+    # Main process logic
+    def process(self):
+        try:
+            youtube_url = self.fields["YouTube URL"].get().strip()
+            if not youtube_url:
+                raise ValueError("YouTube URL is required.")
+
+            # Metadata
+            metadata = {
+                "title": self.fields["Title"].get(),
+                "artist": self.fields["Artist"].get(),
+                "album": self.fields["Album"].get(),
+                "album_artist": self.fields["Album Artist"].get(),
+                "year": self.fields["Year"].get(),
+                "genre": self.fields["Genre"].get(),
+                "track_number": self.fields["Track Number"].get(),
+                "lyrics": self.fields["Lyrics"].get("1.0", tk.END).strip(),
+                "cover_art_path": self.cover_art_path.get()
+            }
+
+            # Validate save folder and filename
+            output_dir = self.output_dir.get()
+            if not output_dir:
+                raise ValueError("Please select a save folder.")
+
+            filename = self.output_filename.get().strip()
+            if not filename:
+                raise ValueError("Please enter an output filename.")
+
+            output_mp3_path = os.path.join(output_dir, f"{filename}.mp3")
+
+            # Download & convert
+            messagebox.showinfo("Processing", "Downloading audio from YouTube...")
+            download_youtube_audio(youtube_url)
+            to_mp3("temp.m4a", output_mp3_path)
+
+            # Add metadata
+            add_metadata(output_mp3_path, metadata)
+
+            # Cleanup
+            if os.path.exists("temp.m4a"):
+                os.remove("temp.m4a")
+
+            # Success message
+            messagebox.showinfo("Success", f"MP3 file saved to:\n{output_mp3_path}")
+        # Error message
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
 # python entry point
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    app = YoutubeMp3GUI(root)
+    root.mainloop()
