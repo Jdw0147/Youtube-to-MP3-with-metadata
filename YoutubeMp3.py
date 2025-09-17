@@ -12,7 +12,7 @@ def download_youtube_audio(youtube_url, output_filename="temp"):
     ydl_opts = {
         'format': 'bestaudio/best', # Downloading the best audio quality available
         'outtmpl': output_filename, # Setting the output filename
-        'quiet': True, # Not showing download process
+        'quiet': False, # Not showing download process
         'postprocessors': [{    # Done after downloading
             'key': 'FFmpegExtractAudio', # Extract just audio using ffmpeg
             'preferredcodec': 'm4a',    # Specify to convert to m4a
@@ -107,7 +107,7 @@ class YoutubeMp3GUI:
 
         # Cover Art file selection (file dialog)
         self.cover_art_path = tk.StringVar()
-        tk.Label(root, text="Cover Art:").grid(row=row, clumn=0, sticky="w", padx=10, pady=2)
+        tk.Label(root, text="Cover Art:").grid(row=row, column=0, sticky="w", padx=10, pady=2)
         tk.Entry(root, textvariable=self.cover_art_path, width=40).grid(row=row, column=1, sticky="w", padx=10)
         tk.Button(root, text="Browse", command=self.select_cover_art).grid(row=row, column=2)
         row += 1
@@ -147,6 +147,7 @@ class YoutubeMp3GUI:
             youtube_url = self.fields["YouTube URL"].get().strip()
             if not youtube_url:
                 raise ValueError("YouTube URL is required.")
+            print("YouTube URL:", youtube_url)  # Debug line
 
             # Metadata
             metadata = {
