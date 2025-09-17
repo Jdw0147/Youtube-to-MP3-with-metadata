@@ -3,7 +3,7 @@ import os
 import subprocess # To run ffmpeg
 from yt_dlp import YoutubeDL # To download YouTube Audio
 from mutagen.mp3 import MP3 # To edit MP3 metadata
-from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
+from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
 
 # Downloading a Youtube video from a link
 def download_youtube_audio(youtube_url, output_filename="temp"):
@@ -51,6 +51,8 @@ def add_metadata(mp3_file, metadata):
     # Adding metadata (standard ID3 tags)
     audio.tags.add(TIT2(encoding=3, text=metadata["title"])) # Song title
     audio.tags.add(TPE1(encoding=3, text=metadata["artist"])) # Artist name
+    if metadata["album_artist"].strip():
+        audio.tags.add(TPE2(encoding=3, text=metadata["album_artist"])) # Album artist
     audio.tags.add(TALB(encoding=3, text=metadata["album"])) # Album name
     audio.tags.add(TDRC(encoding=3, text=metadata["year"])) # Year of release
     audio.tags.add(TCON(encoding=3, text=metadata["genre"])) # Genre
@@ -88,6 +90,7 @@ def main():
         "title": input("Song Title: "),
         "artist": input("Artist Name: "),
         "album": input("Album Name: "),
+        "album_artist": input("Album Artist:  "),
         "year": input("Year of Release: "),
         "genre": input("Genre: "),
         "track_number": input("Track Number (e.g. 1 or 1/12): "),
