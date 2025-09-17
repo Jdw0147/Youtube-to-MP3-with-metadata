@@ -6,7 +6,7 @@ from mutagen.mp3 import MP3 # To edit MP3 metadata
 from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
 
 # Downloading a Youtube video from a link
-def download_youtube_audio(youtube_url, output_filename="temp.m4a"):
+def download_youtube_audio(youtube_url, output_filename="temp"):
     ydl_opts = {
         'format': 'bestaudio/best', # Downloading the best audio quality available
         'outtmpl': output_filename, # Setting the output filename
