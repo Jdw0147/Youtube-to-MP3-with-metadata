@@ -68,3 +68,8 @@ class YoutubeMp3Window(QWidget):
         output_layout.addWidget(output_btn)
         form_layout.addRow(QLabel("File Destination: "), output_layout)
 
+
+        # OUTPUT FILENAME
+        self.output_filename = QLineEdit()
+        form_layout.addRow(QLabel("Filename (No Extension):"), self.output_filename)
+
