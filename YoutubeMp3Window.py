@@ -45,6 +45,7 @@ class YoutubeMp3Window(QWidget):
         for label, field in self.fields.items():
             form_layout.addRow(label, field) # Adding each label + field pair to the form layout
         
+
         # COVER ART SELECTION
         self.cover_art_path = QLineEdit()
         cover_btn = QPushButton("Browse")
@@ -55,3 +56,15 @@ class YoutubeMp3Window(QWidget):
         cover_layout.addWidget(self.cover_art_path)
         cover_layout.addWidget(cover_btn)
         form_layout.addRow(QLabel("Cover Art: "), cover_layout)
+
+
+        # OUTPUT PATH SELECTION
+        self.output_path = QLineEdit()
+        output_btn=QPushButton("Browse")
+        output_btn.clicked.connect(self.select_output_path) 
+
+        output_layout =QHBoxLayout()
+        output_layout.addWidget(self.output_path)
+        output_layout.addWidget(output_btn)
+        form_layout.addRow(QLabel("File Destination: "), output_layout)
+
