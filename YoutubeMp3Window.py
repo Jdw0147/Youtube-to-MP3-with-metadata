@@ -40,9 +40,18 @@ class YoutubeMp3Window(QWidget):
             "Lyrics": QTextEdit(),
         }
 
-        # QFormLayou creates a neat two columned layout with labels and fields on the left and right respectively
+        # QFormLayout creates a neat two columned layout with labels and fields on the left and right respectively
         form_layout = QFormLayout()
         for label, field in self.fields.items():
             form_layout.addRow(label, field) # Adding each label + field pair to the form layout
         
-        
+        # COVER ART SELECTION
+        self.cover_art_path = QLineEdit()
+        cover_btn = QPushButton("Browse")
+        cover_btn.clicked.connect(self.select_cover_art) # The Signal/Slot mechanism in Qt
+
+        # Arranging the forms in the layout
+        cover_layout = QHBoxLayout() #'QH' for horizontal layout
+        cover_layout.addWidget(self.cover_art_path)
+        cover_layout.addWidget(cover_btn)
+        form_layout.addRow(QLabel("Cover Art: "), cover_layout)
