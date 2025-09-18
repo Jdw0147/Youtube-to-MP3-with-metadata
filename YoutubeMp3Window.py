@@ -78,4 +78,11 @@ class YoutubeMp3Window(QWidget):
         self.download_btn = QPushButton("Convert and Download")
         self.download_btn.clicked.connect(self.process) # Process is our main method
 
+
+        # MAIN LAYOUT OF PAGE
+        layout = QVBoxLayout() #'QV' for vertical layout
+        layout.addLayout(form_layout()) # Adding the form layout we created above
+        layout.addWidget(self.download_btn, alignment=Qt.AlignCenter) # Centering the button
+        self.setLayout(layout) # Setting the main layout of the window
+
         
