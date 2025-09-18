@@ -39,3 +39,10 @@ class YoutubeMp3Window(QWidget):
             "Track Number": QLineEdit(),
             "Lyrics": QTextEdit(),
         }
+
+        # QFormLayou creates a neat two columned layout with labels and fields on the left and right respectively
+        form_layout = QFormLayout()
+        for label, field in self.fields.items():
+            form_layout.addRow(label, field) # Adding each label + field pair to the form layout
+        
+        
