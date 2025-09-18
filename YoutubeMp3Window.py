@@ -72,4 +72,10 @@ class YoutubeMp3Window(QWidget):
         # OUTPUT FILENAME
         self.output_filename = QLineEdit()
         form_layout.addRow(QLabel("Filename (No Extension):"), self.output_filename)
+        
+        
+        # DOWNLOAD BUTTON
+        self.download_btn = QPushButton("Convert and Download")
+        self.download_btn.clicked.connect(self.process) # Process is our main method
 
+        
