@@ -26,7 +26,9 @@ class YoutubeMp3Window(QWidget):
         super().__init__()  # Initializing the base (parent) QWidget class
         self.setWindowTitle("Convert Youtube to MP3")   # Setting window title
 
+        #=============
         # INPUT FIELDS
+        #=============
         # Remember QLineEdit is single line input, QTextEdit is multi-line input
         # Defining as a dictionary so we can loop over it, creating the form easily
         self.fields = {
@@ -45,8 +47,9 @@ class YoutubeMp3Window(QWidget):
         for label, field in self.fields.items():
             form_layout.addRow(label, field) # Adding each label + field pair to the form layout
         
-
+        #====================
         # COVER ART SELECTION
+        #====================
         self.cover_art_path = QLineEdit()
         cover_btn = QPushButton("Browse")
         cover_btn.clicked.connect(self.select_cover_art) # The Signal/Slot mechanism in Qt
@@ -57,8 +60,9 @@ class YoutubeMp3Window(QWidget):
         cover_layout.addWidget(cover_btn)
         form_layout.addRow(QLabel("Cover Art: "), cover_layout)
 
-
+        #======================
         # OUTPUT PATH SELECTION
+        #======================
         self.output_path = QLineEdit()
         output_btn=QPushButton("Browse")
         output_btn.clicked.connect(self.select_output_path) 
@@ -68,25 +72,30 @@ class YoutubeMp3Window(QWidget):
         output_layout.addWidget(output_btn)
         form_layout.addRow(QLabel("File Destination: "), output_layout)
 
-
+        #================
         # OUTPUT FILENAME
+        #================
         self.output_filename = QLineEdit()
         form_layout.addRow(QLabel("Filename (No Extension):"), self.output_filename)
         
-        
+        #================
         # DOWNLOAD BUTTON
+        #================
         self.download_btn = QPushButton("Convert and Download")
         self.download_btn.clicked.connect(self.process) # Process is our main method
 
-
+        #====================
         # MAIN LAYOUT OF PAGE
+        #====================
         layout = QVBoxLayout() #'QV' for vertical layout    
-        layout.addLayout(form_layout()) # Adding the form layout we created above
+        layout.addLayout(form_layout) # Adding the form layout we created above
         layout.addWidget(self.download_btn, alignment=Qt.AlignCenter) # Centering the button
         self.setLayout(layout) # Setting the main layout of the window
 
         
+        #=======
         #DIALOGS
+        #=======
 
         # Album Art
         def select_cover_art(self):
@@ -105,8 +114,9 @@ class YoutubeMp3Window(QWidget):
             if path:
                 self.output_path.setText(path)
 
-
+        #============
         # MAIN METHOD
+        #============
         def process(self):
             try:
                 # Validating youtube url
@@ -162,9 +172,9 @@ class YoutubeMp3Window(QWidget):
                 QMessageBox.critical(self, "Error", str(e))
 
 
-
-
+#============
 # ENTRY POINT
+#============
 
 # QApplication is required for any Qt app. It manages the event loop.
 # sys.argv passes command-line arguments to Qt (not usually needed here).
