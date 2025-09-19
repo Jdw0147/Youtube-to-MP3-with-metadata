@@ -93,83 +93,83 @@ class YoutubeMp3Window(QWidget):
         self.setLayout(layout) # Setting the main layout of the window
 
         
-        #=======
-        #DIALOGS
-        #=======
+    #=======
+    #DIALOGS
+    #=======
 
-        # Album Art
-        def select_cover_art(self):
-            path, _ = QFileDialog.getOpenFileName(
-                self,
-                "Select Cover Art",
-                "",
-                "Images (*.jpg *.jpeg)"
-            )
-            if path:
-                self.cover_art_path.setText(path)
+    # Album Art
+    def select_cover_art(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Cover Art",
+            "",
+            "Images (*.jpg *.jpeg)"
+        )
+        if path:
+            self.cover_art_path.setText(path)
 
-        # Output Path
-        def select_output_path(self):
-            path = QFileDialog.getExistingDirectory(self, "Select Destination Folder")
-            if path:
-                self.output_path.setText(path)
+    # Output Path
+    def select_output_path(self):
+        path = QFileDialog.getExistingDirectory(self, "Select Destination Folder")
+        if path:
+            self.output_path.setText(path)
 
-        #============
-        # MAIN METHOD
-        #============
-        def process(self):
-            try:
-                # Validating youtube url
-                yt_url = self.fields["YouTube URL"].text().strip()
-                if not yt_url:
-                    raise ValueError("Please Enter a YouTube URL")
+    #============
+    # MAIN METHOD
+    #============
+    def process(self):
+        try:
+            # Validating youtube url
+            yt_url = self.fields["YouTube URL"].text().strip()
+            if not yt_url:
+                raise ValueError("Please Enter a YouTube URL")
                 
-                # Collecting fields
-                metadata = {
-                "title": self.fields["Title"].text(),
-                "artist": self.fields["Artist"].text(),
-                "album": self.fields["Album"].text(),
-                "album_artist": self.fields["Album Artist"].text(),
-                "year": self.fields["Year"].text(),
-                "genre": self.fields["Genre"].text(),
-                "track_number": self.fields["Track Number"].text(),
-                "lyrics": self.fields["Lyrics"].toPlainText().strip(),
-                "cover_art_path": self.cover_art_path.text(),
-                }
+            # Collecting fields
+            metadata = {
+            "title": self.fields["Title"].text(),
+            "artist": self.fields["Artist"].text(),
+            "album": self.fields["Album"].text(),
+            "album_artist": self.fields["Album Artist"].text(),
+            "year": self.fields["Year"].text(),
+            "genre": self.fields["Genre"].text(),
+            "track_number": self.fields["Track Number"].text(),
+            "lyrics": self.fields["Lyrics"].toPlainText().strip(),
+            "cover_art_path": self.cover_art_path.text(),
+            }
 
-                # Validating output folder and filename
-                output_path = self.output_path.text()
-                if not output_path:
-                    raise ValueError("Please select a destination folder")
+            # Validating output folder and filename
+            output_path = self.output_path.text()
+            if not output_path:
+                raise ValueError("Please select a destination folder")
                 
-                filename = self.output_filename.text().strip()
-                if not filename:
-                    raise ValueError("Please enter a file")
+            filename = self.output_filename.text().strip()
+            if not filename:
+                raise ValueError("Please enter a file")
                 
-                output_mp3_path = os.path.join(output_path, f"{filename}.mp3")
+            output_mp3_path = os.path.join(output_path, f"{filename}.mp3")
 
-                # Backend stuff
-                QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
+            # Backend stuff
+            QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
                                         
-                # Downloading youtube audio
-                download_youtube_audio(yt_url)
+            # Downloading youtube audio
+            download_youtube_audio(yt_url)
 
-                # Convert to mp3
-                to_mp3("temp.m4a", output_mp3_path)
+            # Convert to mp3
+            to_mp3("temp.m4a", output_mp3_path)
 
-                # Adding metadata
-                add_metadata(output_mp3_path, metadata)
+            # Adding metadata
+            add_metadata(output_mp3_path, metadata)
 
-                # Cleanup
-                if os.path.exists("temp.m4a"):
-                    os.remove("temp.m4a")
+            # Cleanup
+            if os.path.exists("temp.m4a"):
+                os.remove("temp.m4a")
 
-                # --- Step 6: Success message ---
-                QMessageBox.information(self, "Success", f"MP3 file saved to:\n{output_mp3_path}")
+            # Success message
+            QMessageBox.information(self, "Success", f"MP3 file saved to:\n{output_mp3_path}")
 
-            except Exception as e:
-                # If anything fails, show error popup
-                QMessageBox.critical(self, "Error", str(e))
+        except Exception as e:
+            # If anything fails, show error popup
+            QMessageBox.critical(self, "Error", str(e))
 
 
 #============
