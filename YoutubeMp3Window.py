@@ -36,6 +36,7 @@ class YoutubeMp3Window(QWidget):
             "Title": QLineEdit(),
             "Artist": QLineEdit(),
             "Album": QLineEdit(),
+            "Album Artist": QLineEdit(),
             "Year": QLineEdit(),
             "Genre": QLineEdit(),
             "Track Number": QLineEdit(),
