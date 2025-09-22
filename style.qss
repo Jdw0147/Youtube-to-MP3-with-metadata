@@ -35,6 +35,9 @@ QPushButton {
 QPushButton:hover {
     background-color: #2c5a91;
 }
+QPushButton:pressed {
+    background-color: #2c5a91;
+}
 
 QLabel#CoverArtLabel {
     border: 2px dashed #777;
