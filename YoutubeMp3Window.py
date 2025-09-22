@@ -51,8 +51,16 @@ class YoutubeMp3Window(QWidget):
         #====================
         # COVER ART SELECTION
         #====================
+        # Visual setup
+        self.cover_art_label = QLabel("No Image")
+        self.cover_art_label.setFixedSize(150, 150) 
+        self.cover_art_label.setAlignment(Qt.AlignCenter)
+        # Setting object name for styling in style.qss
+        self.cover_art_label.setObjectName("CoverArtLabel")
+        
+        # Logic Setup
         self.cover_art_path = QLineEdit()
-        cover_btn = QPushButton("Browse")
+        cover_btn = QPushButton("Choose")
         cover_btn.clicked.connect(self.select_cover_art) # The Signal/Slot mechanism in Qt
 
         # Arranging the forms in the layout
