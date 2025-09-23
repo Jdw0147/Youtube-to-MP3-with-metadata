@@ -1,8 +1,8 @@
 import os
 import sys
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QLineEdit, QTextEdit, QPushButton,
-    QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QMessageBox
+    QApplication, QWidget, QLineEdit, QTextEdit, QPushButton, QLabel,
+    QFileDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QMessageBox
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
@@ -12,49 +12,43 @@ from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 class YoutubeMp3Window(QWidget):
     """
     Main window for the YouTube → MP3 converter app using PySide6 (Qt).
-    Layout:
-    - URL input at top (full width)
-    - Album art on left, first 4 inputs (Title, Artist, Album, Album Artist) on right
-    - Next row (Year + Genre, Track # + Output Filename)
-    - Bottom row: Output Folder (left) + Convert Button (right)
+    Handles all UI logic (layouts, album art preview, dialogs).
     """
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Convert YouTube to MP3")
 
-        # =========================
-        #  FIELD DEFINITIONS
-        # =========================
-        self.fields = {
-            "YouTube URL": QLineEdit(),
-            "Title": QLineEdit(),
-            "Artist": QLineEdit(),
-            "Album": QLineEdit(),
-            "Album Artist": QLineEdit(),
-            "Year": QLineEdit(),
-            "Genre": QLineEdit(),
-            "Track Number": QLineEdit(),
-            "Lyrics": QTextEdit(),
-        }
+        # =========
+        # VARIABLES
+        # =========
+        self.cover_art_path = ""  # Will hold string path to image file
 
-        # Output filename (special field)
+        # ===========
+        # MAIN FIELDS
+        # ===========
+        self.url_field = QLineEdit()
+        self.url_field.setPlaceholderText("Enter YouTube URL...")
+
+        self.title_field = QLineEdit()
+        self.artist_field = QLineEdit()
+        self.album_field = QLineEdit()
+        self.album_artist_field = QLineEdit()
+
+        self.year_field = QLineEdit()
+        self.genre_field = QLineEdit()
+        self.track_field = QLineEdit()
         self.output_filename = QLineEdit()
 
-        # Output path (special field)
+        self.lyrics_field = QTextEdit()
+        self.lyrics_field.setPlaceholderText("Enter lyrics here...")
+
         self.output_path = QLineEdit()
         self.output_path.setPlaceholderText("Choose save folder...")
 
-        # =========================
-        #  TOP: URL INPUT
-        # =========================
-        url_layout = QHBoxLayout()
-        url_layout.addWidget(QLabel("YouTube URL:"))
-        url_layout.addWidget(self.fields["YouTube URL"])
-
-        # =========================
-        #  ALBUM ART (LEFT SIDE)
-        # =========================
+        # ============
+        # COVER ART UI
+        # ============
         self.cover_art_label = QLabel("No Image")
         self.cover_art_label.setFixedSize(150, 150)
         self.cover_art_label.setAlignment(Qt.AlignCenter)
@@ -67,77 +61,87 @@ class YoutubeMp3Window(QWidget):
         cover_layout.addWidget(self.cover_art_label, alignment=Qt.AlignCenter)
         cover_layout.addWidget(cover_btn, alignment=Qt.AlignCenter)
 
-        # =========================
-        #  FIRST 4 INPUTS (RIGHT OF ART)
-        # =========================
-        right_top_form = QFormLayout()
-        right_top_form.addRow("Title:", self.fields["Title"])
-        right_top_form.addRow("Artist:", self.fields["Artist"])
-        right_top_form.addRow("Album:", self.fields["Album"])
-        right_top_form.addRow("Album Artist:", self.fields["Album Artist"])
+        # ====================
+        # TOP SECTION (URL row)
+        # ====================
+        top_url_layout = QHBoxLayout()
+        top_url_layout.addWidget(QLabel("YouTube URL:"))
+        top_url_layout.addWidget(self.url_field)
 
-        # Combine cover art + first 4 inputs
+        # =====================
+        # TOP SECTION (cover + 4 fields)
+        # =====================
+        fields_form = QFormLayout()
+        fields_form.addRow("Title:", self.title_field)
+        fields_form.addRow("Artist:", self.artist_field)
+        fields_form.addRow("Album:", self.album_field)
+        fields_form.addRow("Album Artist:", self.album_artist_field)
+
         top_layout = QHBoxLayout()
         top_layout.addLayout(cover_layout, stretch=1)
-        top_layout.addLayout(right_top_form, stretch=2)
+        top_layout.addLayout(fields_form, stretch=2)
 
-        # =========================
-        #  NEXT ROW (Year/Genre + Track#/Filename)
-        # =========================
+        # ======================
+        # MIDDLE SECTION (2x2)
+        # ======================
+        mid_form_left = QFormLayout()
+        mid_form_left.addRow("Year:", self.year_field)
+        mid_form_left.addRow("Genre:", self.genre_field)
+
+        mid_form_right = QFormLayout()
+        mid_form_right.addRow("Track #:", self.track_field)
+        mid_form_right.addRow("Filename:", self.output_filename)
+
         middle_layout = QHBoxLayout()
+        middle_layout.addLayout(mid_form_left)
+        middle_layout.addLayout(mid_form_right)
 
-        left_form = QFormLayout()
-        left_form.addRow("Year:", self.fields["Year"])
-        left_form.addRow("Genre:", self.fields["Genre"])
-
-        right_form = QFormLayout()
-        right_form.addRow("Track #:", self.fields["Track Number"])
-        right_form.addRow("Filename:", self.output_filename)
-
-        middle_layout.addLayout(left_form)
-        middle_layout.addLayout(right_form)
-
-        # =========================
-        #  LYRICS BOX (FULL WIDTH)
-        # =========================
+        # ============
+        # LYRICS BOX
+        # ============
         lyrics_layout = QFormLayout()
-        lyrics_layout.addRow("Lyrics:", self.fields["Lyrics"])
+        lyrics_layout.addRow("Lyrics:", self.lyrics_field)
 
-        # =========================
-        #  BOTTOM ROW (Output path + Convert button)
-        # =========================
+        # =======================
+        # BOTTOM (path + download)
+        # =======================
         bottom_layout = QHBoxLayout()
+        bottom_layout.addWidget(QLabel("Save To:"))
         bottom_layout.addWidget(self.output_path)
 
-        output_btn = QPushButton("Browse")
-        output_btn.clicked.connect(self.select_output_path)
-        bottom_layout.addWidget(output_btn)
+        browse_btn = QPushButton("Browse")
+        browse_btn.clicked.connect(self.select_output_path)
+        bottom_layout.addWidget(browse_btn)
 
         self.download_btn = QPushButton("Convert and Download")
+        self.download_btn.setFixedHeight(40)
         self.download_btn.clicked.connect(self.process)
         bottom_layout.addWidget(self.download_btn)
 
-        # =========================
-        #  MAIN LAYOUT
-        # =========================
+        # =========
+        # MAIN LAYOUT
+        # =========
         main_layout = QVBoxLayout()
-        main_layout.addLayout(url_layout)      # Top URL row
-        main_layout.addLayout(top_layout)      # Album art + first 4 inputs
-        main_layout.addLayout(middle_layout)   # Year/Genre + Track#/Filename
-        main_layout.addLayout(lyrics_layout)   # Lyrics field
-        main_layout.addLayout(bottom_layout)   # Output path + convert button
+        main_layout.addLayout(top_url_layout)
+        main_layout.addLayout(top_layout)
+        main_layout.addLayout(middle_layout)
+        main_layout.addLayout(lyrics_layout)
+        main_layout.addLayout(bottom_layout)
 
         self.setLayout(main_layout)
 
-    # =========================
-    #  FILE DIALOGS
-    # =========================
+    # ============================
+    # COVER ART (dialog + preview)
+    # ============================
     def select_cover_art(self):
         path, _ = QFileDialog.getOpenFileName(
-            self, "Select Cover Art", "", "Images (*.jpg *.jpeg *.png)"
+            self,
+            "Select Cover Art",
+            "",
+            "Images (*.jpg *.jpeg *.png)"
         )
         if path:
-            # Display the image
+            self.cover_art_path = path
             pixmap = QPixmap(path)
             scaled_pixmap = pixmap.scaled(
                 self.cover_art_label.width(),
@@ -146,34 +150,34 @@ class YoutubeMp3Window(QWidget):
                 Qt.SmoothTransformation
             )
             self.cover_art_label.setPixmap(scaled_pixmap)
-            self.cover_art_label.setText("")  # clear placeholder text
-            # Save for metadata use
-            self.cover_art_path = path
 
+    # ==========================
+    # OUTPUT FOLDER DIALOG
+    # ==========================
     def select_output_path(self):
         path = QFileDialog.getExistingDirectory(self, "Select Destination Folder")
         if path:
             self.output_path.setText(path)
 
-    # =========================
-    #  MAIN PROCESS
-    # =========================
+    # ==========================
+    # MAIN PROCESSING LOGIC
+    # ==========================
     def process(self):
         try:
-            yt_url = self.fields["YouTube URL"].text().strip()
+            yt_url = self.url_field.text().strip()
             if not yt_url:
                 raise ValueError("Please enter a YouTube URL")
 
             metadata = {
-                "title": self.fields["Title"].text(),
-                "artist": self.fields["Artist"].text(),
-                "album": self.fields["Album"].text(),
-                "album_artist": self.fields["Album Artist"].text(),
-                "year": self.fields["Year"].text(),
-                "genre": self.fields["Genre"].text(),
-                "track_number": self.fields["Track Number"].text(),
-                "lyrics": self.fields["Lyrics"].toPlainText().strip(),
-                "cover_art_path": getattr(self, "cover_art_path", ""),  # safe
+                "title": self.title_field.text(),
+                "artist": self.artist_field.text(),
+                "album": self.album_field.text(),
+                "album_artist": self.album_artist_field.text(),
+                "year": self.year_field.text(),
+                "genre": self.genre_field.text(),
+                "track_number": self.track_field.text(),
+                "lyrics": self.lyrics_field.toPlainText().strip(),
+                "cover_art_path": self.cover_art_path,
             }
 
             output_path = self.output_path.text()
@@ -182,11 +186,11 @@ class YoutubeMp3Window(QWidget):
 
             filename = self.output_filename.text().strip()
             if not filename:
-                raise ValueError("Please enter a filename")
+                raise ValueError("Please enter an output filename")
 
             output_mp3_path = os.path.join(output_path, f"{filename}.mp3")
 
-            # Backend process
+            # Processing
             QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
             download_youtube_audio(yt_url)
             to_mp3("temp.m4a", output_mp3_path)
@@ -201,9 +205,9 @@ class YoutubeMp3Window(QWidget):
             QMessageBox.critical(self, "Error", str(e))
 
 
-# =========================
-#  ENTRY POINT
-# =========================
+# ============
+# ENTRY POINT
+# ============
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = YoutubeMp3Window()
