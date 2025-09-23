@@ -59,14 +59,13 @@ class YoutubeMp3Window(QWidget):
         self.cover_art_label.setObjectName("CoverArtLabel")
         
         # Logic Setup
-        self.cover_art_path = QLineEdit()
         cover_btn = QPushButton("Choose")
         cover_btn.clicked.connect(self.select_cover_art) # The Signal/Slot mechanism in Qt
 
         # Arranging the forms in the layout
-        cover_layout = QHBoxLayout() #'QH' for horizontal layout
-        cover_layout.addWidget(self.cover_art_path)
-        cover_layout.addWidget(cover_btn)
+        cover_layout = QVBoxLayout() #'QH' for horizontal layout
+        cover_layout.addWidget(self.cover_art_label, alignment=Qt.AlignCenter)
+        cover_layout.addWidget(cover_btn, alignment=Qt.AlignCenter)
         form_layout.addRow(QLabel("Cover Art: "), cover_layout)
 
         #======================
