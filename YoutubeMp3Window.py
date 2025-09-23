@@ -44,9 +44,46 @@ class YoutubeMp3Window(QWidget):
         }
 
         # QFormLayout creates a neat two columned layout with labels and fields on the left and right respectively
-        form_layout = QFormLayout()
-        for label, field in self.fields.items():
-            form_layout.addRow(label, field) # Adding each label + field pair to the form layout
+        # Right side of top section
+        top_right_form = QFormLayout()
+        top_right_form.addRow("YouTube URL:", self.fields["YouTube URL"])
+        top_right_form.addRow("Title:", self.fields["Title"])
+        top_right_form.addRow("Artist:", self.fields["Artist"])
+        top_right_form.addRow("Album:", self.fields["Album"])
+
+        #Top Section Layout
+        top_layout = QHBoxLayout()
+        top_layout.addLayout(cover_layout, stretch=1)
+        top_layout.addLayout(top_right_form, stretch=2)
+
+        # Middle section under album art
+        year_genre_layout = QFormLayout()
+        year_genre_layout.addRow("Year:", self.fields["Year"])
+        year_genre_layout.addRow("Genre:", self.fields["Genre"])
+
+        album_track_layout = QFormLayout()
+        album_track_layout.addRow("Album Artist:", self.fields["Album Artist"])
+        album_track_layout.addRow("Track #:", self.fields["Track Number"])
+
+        middle_layout = QHBoxLayout()
+        middle_layout.addLayout(year_genre_layout)
+        middle_layout.addLayout(album_track_layout)
+
+        # Lyrics section
+        lyrics_layout = QFormLayout()
+        lyrics_layout.addRow("Lyrics:", self.fields["Lyrics"])
+
+        # Main Layout
+        main_layout = QVBoxLayout()
+        # album art + basic fields
+        main_layout.addLayout(top_layout)
+        # Year/Genre + Album Artist/Track
+        main_layout.addLayout(middle_layout)
+        # Lyrics box
+        main_layout.addLayout(lyrics_layout)
+        main_layout.addWidget(self.download_btn, alignment=Qt.AlignCenter)
+
+        self.setLayout(main_layout)
         
         #====================
         # COVER ART SELECTION
@@ -63,7 +100,7 @@ class YoutubeMp3Window(QWidget):
         cover_btn.clicked.connect(self.select_cover_art) # The Signal/Slot mechanism in Qt
 
         # Arranging the forms in the layout
-        cover_layout = QVBoxLayout() #'QH' for horizontal layout
+        cover_layout = QVBoxLayout() #'QVBoxLayout' for vertical layout
         cover_layout.addWidget(self.cover_art_label, alignment=Qt.AlignCenter)
         cover_layout.addWidget(cover_btn, alignment=Qt.AlignCenter)
         form_layout.addRow(QLabel("Cover Art: "), cover_layout)
