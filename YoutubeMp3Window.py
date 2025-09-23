@@ -210,6 +210,13 @@ class YoutubeMp3Window(QWidget):
 # ============
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    with open("style.qss", "r") as f:
+        app.setStyleSheet(f.read())
+
     window = YoutubeMp3Window()
+
+    window.download_btn.setObjectName("DownloadBtn")
+    
     window.show()
     sys.exit(app.exec())
