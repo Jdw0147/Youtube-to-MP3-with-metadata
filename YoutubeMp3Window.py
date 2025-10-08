@@ -135,12 +135,30 @@ class YoutubeMp3Window(QWidget):
     # COVER ART (dialog + preview)
     # ============================
     def select_cover_art(self):
+        valid_exts = (".jpg", ".jpeg", ".JPG", ".png", ".PNG")
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Select Cover Art",
             "",
-            "Images (*.jpg *.jpeg *.png)"
+            "Images (*.jpg *.jpeg *.png *.heic *.webp *.bmp *.tiff *.gif)"
         )
+
+        # Getting extension of selected image
+        ext = os.path.splitext(path)[1].lower()
+        if ext not in valid_exts:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Invalid File Type")
+            msg.setText("This image is not of valid type, would you like to convert it to a valid type?")
+            png_btn = msg.addButton("Yes, to PNG", QMessageBox.AcceptRole)
+            jpg_btn = msg.addButton("Yes, to JPG", QMessageBox.AcceptRole)
+            no_btn = msg.addButton("No", QMessageBox.RejectRole)
+            msg.setIcon(QMessageBox.Question)
+            msg.exec()
+
+            if msg.clickedButton() == no_btn:
+                return
+            
+            # Choose output extension
         if path:
             self.cover_art_path = path
             pixmap = QPixmap(path)
