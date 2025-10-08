@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
+from PIL import Image
 
 
 class YoutubeMp3Window(QWidget):
