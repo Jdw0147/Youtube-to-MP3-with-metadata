@@ -143,6 +143,9 @@ class YoutubeMp3Window(QWidget):
             "Images (*.jpg *.jpeg *.png *.heic *.webp *.bmp *.tiff *.gif)"
         )
 
+        if not path:
+            return
+
         # Getting extension of selected image
         ext = os.path.splitext(path)[1].lower()
         if ext not in valid_exts:
@@ -159,16 +162,30 @@ class YoutubeMp3Window(QWidget):
                 return
             
             # Choose output extension
-        if path:
-            self.cover_art_path = path
-            pixmap = QPixmap(path)
-            scaled_pixmap = pixmap.scaled(
-                self.cover_art_label.width(),
-                self.cover_art_label.height(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
-            )
-            self.cover_art_label.setPixmap(scaled_pixmap)
+            output_ext = ".png" if msg.clickedButton() == png_btn else ".jpg"
+            output_path = os.path.splitext(path)[0] + output_ext
+
+            try:
+                img = Image.open(path)
+                # Converting to RBG if jpg
+                if output_ext == ".jpg" and img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(output_path)
+                path = output_path
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to convert image: \n{str(e)}")
+                return
+
+
+        self.cover_art_path = path
+        pixmap = QPixmap(path)
+        scaled_pixmap = pixmap.scaled(
+            self.cover_art_label.width(),
+            self.cover_art_label.height(),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation
+        )
+        self.cover_art_label.setPixmap(scaled_pixmap)
 
     # ==========================
     # OUTPUT FOLDER DIALOG
