@@ -134,6 +134,10 @@ TIP: I usually select my downloads folder as destination then move them to my lo
 folder afterwards because spotify has a wierd bug where when a new file is introduced directly
 into where it searches for local files, it kinda bugs out and doesn't recognize it.
 
+### Image Type Conversion
+A new feature of this program is dealing with 'invalid' image types.  Spotify and Apple music are very particular about what filetypes they allow/will display (png, jpg).  But to counteract the irritating process of finding another third party app to convert your album cover to a valid type, I've added a feature where if the entered image is not a valid type, the user will be notified of this and prompted to change the file type.  They can either convert the image to a valid type (options given are jpg and png) or they can cancel and return to the selection screen.
+![Image Conversion](imagetype.png)
+
 Making this project was very fun and I got to gain some very interesting experience in 
 python GUI creation.  I've only ever used tkinter before when it comes to python interfaces
 so it was neat learning a new method of styling python and I'll definitely be using PySide6

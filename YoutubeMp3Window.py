@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
+from PIL import Image
 
 
 class YoutubeMp3Window(QWidget):
@@ -134,22 +135,57 @@ class YoutubeMp3Window(QWidget):
     # COVER ART (dialog + preview)
     # ============================
     def select_cover_art(self):
+        valid_exts = (".jpg", ".jpeg", ".JPG", ".png", ".PNG")
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Select Cover Art",
             "",
-            "Images (*.jpg *.jpeg *.png)"
+            "Images (*.jpg *.jpeg *.png *.heic *.webp *.bmp *.tiff *.gif)"
         )
-        if path:
-            self.cover_art_path = path
-            pixmap = QPixmap(path)
-            scaled_pixmap = pixmap.scaled(
-                self.cover_art_label.width(),
-                self.cover_art_label.height(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
-            )
-            self.cover_art_label.setPixmap(scaled_pixmap)
+
+        if not path:
+            return
+
+        # Getting extension of selected image
+        ext = os.path.splitext(path)[1].lower()
+        if ext not in valid_exts:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Invalid File Type")
+            msg.setText("This image is not of valid type, would you like to convert it to a valid type?")
+            png_btn = msg.addButton("Yes, to PNG", QMessageBox.AcceptRole)
+            jpg_btn = msg.addButton("Yes, to JPG", QMessageBox.AcceptRole)
+            no_btn = msg.addButton("No", QMessageBox.RejectRole)
+            msg.setIcon(QMessageBox.Question)
+            msg.exec()
+
+            if msg.clickedButton() == no_btn:
+                return
+            
+            # Choose output extension
+            output_ext = ".png" if msg.clickedButton() == png_btn else ".jpg"
+            output_path = os.path.splitext(path)[0] + output_ext
+
+            try:
+                img = Image.open(path)
+                # Converting to RBG if jpg
+                if output_ext == ".jpg" and img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(output_path)
+                path = output_path
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to convert image: \n{str(e)}")
+                return
+
+
+        self.cover_art_path = path
+        pixmap = QPixmap(path)
+        scaled_pixmap = pixmap.scaled(
+            self.cover_art_label.width(),
+            self.cover_art_label.height(),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation
+        )
+        self.cover_art_label.setPixmap(scaled_pixmap)
 
     # ==========================
     # OUTPUT FOLDER DIALOG
