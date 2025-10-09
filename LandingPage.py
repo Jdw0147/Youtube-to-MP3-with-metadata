@@ -31,3 +31,30 @@ class AlbumPage(QWidget):
         layout.addWidget(btn_playlist)
         layout.addWidget(btn_manual)
 
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("YouTube to MP3 Converter")
+        self.stack = QStackedWidget()
+        self.landing = LandingPage(self.show_song, self.show_album)
+        self.song_page = YoutubeMp3Window()
+        self.album_page = AlbumPage()
+        self.stack.addWidget(self.landing)
+        self.stack.addWidget(self.song_page)
+        self.stack.addWidget(self.album_page)
+        layout = QVBoxLayout()
+        layout.addWidget(self.stack)
+        self.layout(layout)
+        self.stack.setCurrentWidget(self.landing)
+
+    def show_song(self):
+        self.stack.setCurrentWidget(self.song_page)
+        
+    def show_album(self):
+        self.stack.setCurrentWidget(self.album_page)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
