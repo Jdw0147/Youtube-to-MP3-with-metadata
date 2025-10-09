@@ -79,7 +79,7 @@ class ManualEntry(QWidget):
         # Album Art
         art_layout = QVBoxLayout()
         self.album_art_label = QLabel()
-        self.album_art_label.setFixedSize(140, 140)
+        self.album_art_label.setFixedSize(200, 200)
         self.album_art_label.setStyleSheet(
             "border: 2px dashed #888;"
             "background: #eee;"
@@ -201,7 +201,7 @@ class ManualEntry(QWidget):
                 return
 
         pixmap = QPixmap(path)
-        scaled = pixmap.scaled(140, 140, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        scaled = pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.album_art_label.setPixmap(scaled)
         self.album_art_label.setText("")  # Clear "No Art"
         self.album_art_path = path
