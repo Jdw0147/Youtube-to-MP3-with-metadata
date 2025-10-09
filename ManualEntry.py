@@ -2,6 +2,7 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit,
     QFileDialog, QTextEdit, QMessageBox, QScrollArea, QGridLayout, QGroupBox
 )
+from PIL import Image
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
@@ -161,13 +162,49 @@ class ManualEntry(QWidget):
         self.add_song_entry()
 
     def choose_album_art(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Select Album Art", "", "Images (*.png *.jpg *.jpeg *.bmp *.gif)")
-        if path:
-            pixmap = QPixmap(path)
-            scaled = pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self.album_art_label.setPixmap(scaled)
-            self.album_art_label.setText("")  # Clear "No Art"
-            self.album_art_path = path
+        valid_exts = (".jpg", ".jpeg", ".png")
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Album Art",
+            "",
+            "Images (*.jpg *.jpeg *.png *.heic *.webp *.bmp *.tiff *.gif)"
+        )
+        if not path:
+            return
+
+        ext = path.lower().rsplit(".", 1)[-1]
+        ext = f".{ext}"
+        if ext not in valid_exts:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Invalid Image Type")
+            msg.setText("This image is not of valid type.\nWould you like to convert it to a valid type?")
+            png_btn = msg.addButton("Yes, to PNG", QMessageBox.AcceptRole)
+            jpg_btn = msg.addButton("Yes, to JPG", QMessageBox.AcceptRole)
+            no_btn = msg.addButton("No", QMessageBox.RejectRole)
+            msg.setIcon(QMessageBox.Question)
+            msg.exec()
+
+            if msg.clickedButton() == no_btn:
+                return
+
+            out_ext = ".png" if msg.clickedButton() == png_btn else ".jpg"
+            out_path = path.rsplit(".", 1)[0] + "_converted" + out_ext
+
+            try:
+                img = Image.open(path)
+                if out_ext == ".jpg" and img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(out_path)
+                path = out_path
+            except Exception as e:
+                QMessageBox.critical(self, "Conversion Error", f"Could not convert image:\n{e}")
+                return
+
+        pixmap = QPixmap(path)
+        scaled = pixmap.scaled(140, 140, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.album_art_label.setPixmap(scaled)
+        self.album_art_label.setText("")  # Clear "No Art"
+        self.album_art_path = path
 
     def add_song_entry(self):
         song_number = len(self.song_entries) + 1
