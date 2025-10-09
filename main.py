@@ -31,6 +31,7 @@ class AlbumPage(QWidget):
         layout.addWidget(label)
         layout.addWidget(btn_playlist)
         layout.addWidget(btn_manual)
+        self.setLayout(layout)
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -45,7 +46,7 @@ class MainWindow(QWidget):
         self.stack.addWidget(self.album_page)
         layout = QVBoxLayout()
         layout.addWidget(self.stack)
-        self.layout(layout)
+        self.setLayout(layout)
         self.stack.setCurrentWidget(self.landing)
 
     def show_song(self):
