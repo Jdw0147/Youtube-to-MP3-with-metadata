@@ -1,37 +1,55 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit,
-    QFileDialog, QTextEdit, QScrollArea, QGroupBox
+    QFileDialog, QTextEdit, QMessageBox, QScrollArea, QGridLayout, QGroupBox
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
+from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 
 class SongEntry(QGroupBox):
     def __init__(self, song_number, remove_callback):
         super().__init__(f"Song {song_number}")
         self.remove_callback = remove_callback
         layout = QVBoxLayout()
+        layout.setSpacing(8)
+        layout.setContentsMargins(12, 8, 12, 8)
 
+        url_row = QHBoxLayout()
+        self.song_url = QLineEdit()
+        self.song_url.setPlaceholderText("Song URL")
+        self.song_url.setMinimumWidth(220)
+        url_row.addWidget(QLabel("Song URL:"))
+        url_row.addWidget(self.song_url, stretch=2)
+
+        self.track_number = QLineEdit()
+        self.track_number.setPlaceholderText("Track #")
+        self.track_number.setFixedWidth(60)
+        url_row.addWidget(QLabel("Track #:"))
+        url_row.addWidget(self.track_number)
+
+        layout.addLayout(url_row)
+
+        # Second row: Song Name and Song Artist
+        name_row = QHBoxLayout()
         self.song_name = QLineEdit()
         self.song_name.setPlaceholderText("Song Name")
-        self.song_artist = QLineEdit()
-        self.song_artist.setPlaceholderText("Artist")
-        self.track_number = QLineEdit()
-        self.track_number.setPlaceholderText("Track Number")
-        self.lyrics = QTextEdit()
-        self.lyrics.setPlaceholderText("Lyrics")
+        self.song_name.setMinimumWidth(180)
+        name_row.addWidget(QLabel("Song Name:"))
+        name_row.addWidget(self.song_name, stretch=2)
 
+        self.song_artist = QLineEdit()
+        self.song_artist.setPlaceholderText("Artist (leave blank to use Album Artist)")
+        self.song_artist.setMinimumWidth(120)
+        self.song_artist.setMaximumWidth(180)
+        name_row.addWidget(QLabel("Song Artist:"))
+        name_row.addWidget(self.song_artist, stretch=1)
+
+        layout.addLayout(name_row)
+        # Remove button
         remove_btn = QPushButton("Remove")
         remove_btn.clicked.connect(self.remove_self)
-
-        layout.addWidget(QLabel("Song Name:"))
-        layout.addWidget(self.song_name)
-        layout.addWidget(QLabel("Song Artist:"))
-        layout.addWidget(self.song_artist)
-        layout.addWidget(QLabel("Track Number:"))
-        layout.addWidget(self.track_number)
-        layout.addWidget(QLabel("Lyrics:"))
-        layout.addWidget(self.lyrics)
         layout.addWidget(remove_btn, alignment=Qt.AlignRight)
+
         self.setLayout(layout)
 
     def remove_self(self):
@@ -45,6 +63,8 @@ class ManualEntry(QWidget):
         super().__init__()
         self.song_entries = []
         main_layout = QVBoxLayout()
+        main_layout.setSpacing(16)
+        main_layout.setContentsMargins(24, 16, 24, 16)
 
         # Back button
         back_btn = QPushButton("← Back")
@@ -52,20 +72,25 @@ class ManualEntry(QWidget):
         back_btn.clicked.connect(go_back)
         main_layout.addWidget(back_btn, alignment=Qt.AlignLeft)
 
-        # Album Info section
-        album_info_box = QGroupBox("Album Information")
-        album_layout = QVBoxLayout()
+        # --- Top: Album Art + Album Info ---
+        top_layout = QHBoxLayout()
 
         # Album Art
-        art_layout = QHBoxLayout()
-        self.album_art_label = QLabel("No Art")
-        self.album_art_label.setFixedSize(80, 80)
-        self.album_art_label.setStyleSheet("border: 1px solid black;")
+        art_layout = QVBoxLayout()
+        self.album_art_label = QLabel()
+        self.album_art_label.setFixedSize(140, 140)
+        self.album_art_label.setStyleSheet(
+            "border: 2px dashed #888;"
+            "background: #eee;"
+            "border-radius: 16px;"
+        )
+        self.album_art_label.setAlignment(Qt.AlignCenter)
+        self.album_art_label.setText("No Art")
         art_btn = QPushButton("Choose Art")
         art_btn.clicked.connect(self.choose_album_art)
-        art_layout.addWidget(self.album_art_label)
-        art_layout.addWidget(art_btn)
-        album_layout.addLayout(art_layout)
+        art_layout.addWidget(self.album_art_label, alignment=Qt.AlignCenter)
+        art_layout.addWidget(art_btn, alignment=Qt.AlignCenter)
+        top_layout.addLayout(art_layout)
 
         self.album_name = QLineEdit()
         self.album_name.setPlaceholderText("Album Name")
@@ -76,32 +101,59 @@ class ManualEntry(QWidget):
         self.album_genre = QLineEdit()
         self.album_genre.setPlaceholderText("Genre")
 
-        album_layout.addWidget(QLabel("Album Name:"))
-        album_layout.addWidget(self.album_name)
-        album_layout.addWidget(QLabel("Album Artist:"))
-        album_layout.addWidget(self.album_artist)
-        album_layout.addWidget(QLabel("Year:"))
-        album_layout.addWidget(self.album_year)
-        album_layout.addWidget(QLabel("Genre:"))
-        album_layout.addWidget(self.album_genre)
+        # Album Info Fields (2 columns)
+        info_layout = QGridLayout()
+        info_layout.setHorizontalSpacing(12)
+        info_layout.setVerticalSpacing(8)
+        self.album_name = QLineEdit()
+        self.album_artist = QLineEdit()
+        self.album_year = QLineEdit()
+        self.album_genre = QLineEdit()
+        self.album_name.setPlaceholderText("Album Name")
+        self.album_artist.setPlaceholderText("Album Artist")
+        self.album_year.setPlaceholderText("Year")
+        self.album_genre.setPlaceholderText("Genre")
 
-        album_info_box.setLayout(album_layout)
-        main_layout.addWidget(album_info_box)
+        info_layout.addWidget(QLabel("Album Name:"), 0, 0)
+        info_layout.addWidget(self.album_name, 0, 1)
+        info_layout.addWidget(QLabel("Album Artist:"), 1, 0)
+        info_layout.addWidget(self.album_artist, 1, 1)
+        info_layout.addWidget(QLabel("Year:"), 2, 0)
+        info_layout.addWidget(self.album_year, 2, 1)
+        info_layout.addWidget(QLabel("Genre:"), 3, 0)
+        info_layout.addWidget(self.album_genre, 3, 1)
+
+        top_layout.addLayout(info_layout)
+        main_layout.addLayout(top_layout)
+
+        # Info label about song artist fallback
+        info_label = QLabel("Tip: If a song's Artist is left blank, the Album Artist will be used.")
+        info_label.setStyleSheet("color: #666; font-size: 11px;")
+        main_layout.addWidget(info_label)
 
         # Songs section (scrollable)
+        songs_box = QGroupBox("Songs")
+        songs_box_layout = QVBoxLayout()
         self.songs_area = QScrollArea()
         self.songs_area.setWidgetResizable(True)
+        self.songs_area.setMinimumHeight(350)
         self.songs_widget = QWidget()
+        self.songs_widget.setStyleSheet("background: white;")
         self.songs_layout = QVBoxLayout()
         self.songs_widget.setLayout(self.songs_layout)
         self.songs_area.setWidget(self.songs_widget)
-        main_layout.addWidget(QLabel("Songs:"))
-        main_layout.addWidget(self.songs_area, stretch=1)
+        songs_box_layout.addWidget(self.songs_area)
+        songs_box.setLayout(songs_box_layout)
+        main_layout.addWidget(songs_box)
 
         # Add Song button
         add_song_btn = QPushButton("Add Song")
         add_song_btn.clicked.connect(self.add_song_entry)
         main_layout.addWidget(add_song_btn)
+
+        submit_btn = QPushButton("Submit")
+        submit_btn.clicked.connect(self.submit_album)
+        main_layout.addWidget(submit_btn, alignment=Qt.AlignRight)
 
         self.setLayout(main_layout)
 
@@ -130,3 +182,72 @@ class ManualEntry(QWidget):
         # Re-number remaining songs
         for idx, song in enumerate(self.song_entries, 1):
             song.set_number(idx)
+
+    def get_album_data(self):
+        """Collect all album and song info as a dictionary."""
+        album_data = {
+            "album_art": getattr(self, "album_art_path", None),
+            "album_name": self.album_name.text().strip(),
+            "album_artist": self.album_artist.text().strip(),
+            "album_year": self.album_year.text().strip(),
+            "album_genre": self.album_genre.text().strip(),
+            "songs": []
+        }
+        album_artist = album_data["album_artist"]
+        for entry in self.song_entries:
+            song_name = entry.song_name.text().strip()
+            song_artist = entry.song_artist.text().strip() or album_artist
+            track_number = entry.track_number.text().strip()
+            album_data["songs"].append({
+                "song_name": song_name,
+                "song_artist": song_artist,
+                "track_number": track_number
+            })
+        return album_data
+    
+    def submit_album(self):
+        album_data = self.get_album_data()
+        if not album_data["album_name"] or not album_data["songs"]:
+            QMessageBox.warning(self, "Missing Info", "Please enter an album name and at least one song.")
+            return
+
+        confirm = QMessageBox.question(
+            self,
+            "Confirm Submission",
+            "Are you sure you want to submit?\nThis will download and tag all songs.",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if confirm != QMessageBox.Yes:
+            return
+
+        # Choose output folder
+        output_folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
+        if not output_folder:
+            return
+
+        errors = []
+        for song in album_data["songs"]:
+            try:
+                # 1. Download audio
+                audio_path = download_youtube_audio(song["song_url"], output_folder)
+                # 2. Convert to mp3
+                mp3_path = to_mp3(audio_path)
+                # 3. Add metadata
+                add_metadata(
+                    mp3_path,
+                    title=song["song_name"],
+                    artist=song["song_artist"],
+                    album=album_data["album_name"],
+                    album_artist=album_data["album_artist"],
+                    year=album_data["album_year"],
+                    genre=album_data["album_genre"],
+                    track=song["track_number"],
+                    cover_path=album_data["album_art"]
+                )
+            except Exception as e:
+                errors.append(f"{song['song_name']}: {e}")
+
+        if errors:
+            QMessageBox.warning(self, "Some Errors Occurred", "\n".join(errors))
+        else:
+            QMessageBox.information(self, "Success", "All songs downloaded and tagged!")

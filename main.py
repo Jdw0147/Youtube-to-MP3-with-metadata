@@ -5,9 +5,8 @@ from PySide6.QtWidgets import (
 )
 from SongPage import SongPage
 from AlbumPage import AlbumPage
-from AlbumPage import AlbumPage
 from ManualEntry import ManualEntry
-from ImportPlaylist import ImportPlaylist
+#from ImportPlaylist import ImportPlaylist
 
 from PySide6.QtCore import Qt
 
@@ -68,18 +67,18 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("YouTube to MP3 Converter")
-        super().__init__()
         self.stack = QStackedWidget()
+
         self.landing = LandingPage(self.show_song, self.show_album)
         self.album_page = AlbumPage(self.show_landing, self.show_album_manual_entry, self.show_album_playlist_import)
         self.album_manual_entry_page = ManualEntry(self.show_album)
-        self.album_playlist_import_page = ImportPlaylist(self.show_album)
+        #self.album_playlist_import_page = ImportPlaylist(self.show_album)
         self.song_page = SongPage(self.show_landing)
 
         self.stack.addWidget(self.landing)
         self.stack.addWidget(self.album_page)
         self.stack.addWidget(self.album_manual_entry_page)
-        self.stack.addWidget(self.album_playlist_import_page)
+        #self.stack.addWidget(self.album_playlist_import_page)
         self.stack.addWidget(self.song_page)
         layout = QVBoxLayout()
         layout.addWidget(self.stack)
@@ -96,7 +95,8 @@ class MainWindow(QWidget):
         self.stack.setCurrentWidget(self.album_manual_entry_page)
 
     def show_album_playlist_import(self):
-        self.stack.setCurrentWidget(self.album_playlist_import_page)
+        pass
+    #    self.stack.setCurrentWidget(self.album_playlist_import_page)
 
     def show_landing(self):
         self.stack.setCurrentWidget(self.landing)
