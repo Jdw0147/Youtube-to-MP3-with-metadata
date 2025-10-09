@@ -5,6 +5,10 @@ from PySide6.QtWidgets import (
 )
 from SongPage import SongPage
 from AlbumPage import AlbumPage
+from AlbumPage import AlbumPage
+from ManualEntry import ManualEntry
+from ImportPlaylist import ImportPlaylist
+
 from PySide6.QtCore import Qt
 
 class LandingPage(QWidget):
@@ -60,34 +64,23 @@ class LandingPage(QWidget):
 
         self.setLayout(layout)
 
-class AlbumPage(QWidget):
-    def __init__(self, go_back):
-        super().__init__()
-        layout = QVBoxLayout()
-        back_btn = QPushButton("← Back")
-        back_btn.setFixedWidth(80)
-        back_btn.clicked.connect(go_back)  # <-- use go_back here
-        layout.addWidget(back_btn, alignment=Qt.AlignLeft)
-        label = QLabel("Convert an Album/Playlist")
-        label.setAlignment(Qt.AlignCenter)
-        btn_playlist = QPushButton("Export from Youtube Playlist")
-        btn_manual = QPushButton("Enter songs manually")
-        layout.addWidget(label)
-        layout.addWidget(btn_playlist)
-        layout.addWidget(btn_manual)
-        self.setLayout(layout)
-
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("YouTube to MP3 Converter")
+        super().__init__()
         self.stack = QStackedWidget()
         self.landing = LandingPage(self.show_song, self.show_album)
+        self.album_page = AlbumPage(self.show_landing, self.show_album_manual_entry, self.show_album_playlist_import)
+        self.album_manual_entry_page = ManualEntry(self.show_album)
+        self.album_playlist_import_page = ImportPlaylist(self.show_album)
         self.song_page = SongPage(self.show_landing)
-        self.album_page = AlbumPage(self.show_landing)
+
         self.stack.addWidget(self.landing)
-        self.stack.addWidget(self.song_page)
         self.stack.addWidget(self.album_page)
+        self.stack.addWidget(self.album_manual_entry_page)
+        self.stack.addWidget(self.album_playlist_import_page)
+        self.stack.addWidget(self.song_page)
         layout = QVBoxLayout()
         layout.addWidget(self.stack)
         self.setLayout(layout)
@@ -98,6 +91,12 @@ class MainWindow(QWidget):
         
     def show_album(self):
         self.stack.setCurrentWidget(self.album_page)
+
+    def show_album_manual_entry(self):
+        self.stack.setCurrentWidget(self.album_manual_entry_page)
+
+    def show_album_playlist_import(self):
+        self.stack.setCurrentWidget(self.album_playlist_import_page)
 
     def show_landing(self):
         self.stack.setCurrentWidget(self.landing)
