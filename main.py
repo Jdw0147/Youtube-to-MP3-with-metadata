@@ -3,7 +3,8 @@ from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QStackedWidget,
     QHBoxLayout, QFrame, QSizePolicy
 )
-from YoutubeMp3Window import YoutubeMp3Window
+from SongPage import SongPage
+from AlbumPage import AlbumPage
 from PySide6.QtCore import Qt
 
 class LandingPage(QWidget):
@@ -82,7 +83,7 @@ class MainWindow(QWidget):
         self.setWindowTitle("YouTube to MP3 Converter")
         self.stack = QStackedWidget()
         self.landing = LandingPage(self.show_song, self.show_album)
-        self.song_page = YoutubeMp3Window()
+        self.song_page = SongPage()
         self.album_page = AlbumPage(self.show_landing)
         self.stack.addWidget(self.landing)
         self.stack.addWidget(self.song_page)
