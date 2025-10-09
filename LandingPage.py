@@ -19,3 +19,15 @@ class LandingPage(QWidget):
         layout.addWidget(btn_album)
         self.setLayout(layout)
 
+class AlbumPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        label = QLabel("Convert an Album/Playlist")
+        label.setAlignment(Qt.AlignCenter)
+        btn_playlist = QPushButton("Export from Youtube Playlist")
+        btn_manual = QPushButton("Enter songs manually")
+        layout.addWidget(label)
+        layout.addWidget(btn_playlist)
+        layout.addWidget(btn_manual)
+
