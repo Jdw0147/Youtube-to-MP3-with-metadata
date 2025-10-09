@@ -83,7 +83,7 @@ class MainWindow(QWidget):
         self.setWindowTitle("YouTube to MP3 Converter")
         self.stack = QStackedWidget()
         self.landing = LandingPage(self.show_song, self.show_album)
-        self.song_page = SongPage()
+        self.song_page = SongPage(self.show_landing)
         self.album_page = AlbumPage(self.show_landing)
         self.stack.addWidget(self.landing)
         self.stack.addWidget(self.song_page)
@@ -92,17 +92,6 @@ class MainWindow(QWidget):
         layout.addWidget(self.stack)
         self.setLayout(layout)
         self.stack.setCurrentWidget(self.landing)
-
-    def add_back_button_to_song_page(self):
-        # Insert a back button at the top of the song page
-        back_btn = QPushButton("← Back")
-        back_btn.setFixedWidth(80)
-        back_btn.clicked.connect(self.show_landing)
-        # Insert at the top of the layout
-        if hasattr(self.song_page, 'layout'):
-            main_layout = self.song_page.layout()
-            if main_layout is not None:
-                main_layout.insertWidget(0, back_btn, alignment=Qt.AlignLeft)
 
     def show_song(self):
         self.stack.setCurrentWidget(self.song_page)

@@ -16,9 +16,13 @@ class SongPage(QWidget):
     Handles all UI logic (layouts, album art preview, dialogs).
     """
 
-    def __init__(self):
+    def __init__(self, go_back=None):
         super().__init__()
         self.setWindowTitle("Convert YouTube to MP3")
+        back_btn = QPushButton("← Back")
+        back_btn.setFixedWidth(80)
+        if go_back:
+            back_btn.clicked.connect(go_back) 
 
         # =========
         # VARIABLES
@@ -123,6 +127,7 @@ class SongPage(QWidget):
         # MAIN LAYOUT
         # =========
         main_layout = QVBoxLayout()
+        main_layout.addWidget(back_btn, alignment=Qt.AlignLeft)
         main_layout.addLayout(top_url_layout)
         main_layout.addLayout(top_layout)
         main_layout.addLayout(middle_layout)
