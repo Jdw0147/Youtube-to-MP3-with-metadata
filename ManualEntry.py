@@ -293,24 +293,34 @@ class ManualEntry(QWidget):
             try:
                 # 1. Download audio
                 audio_path = download_youtube_audio(song["song_url"], self.output_folder)
+                print("Downloaded file path:", audio_path)
+                print("File exists?", os.path.exists(audio_path))
+                # If file does not exist, try .m4a extension
+                if not os.path.exists(audio_path):
+                    alt_path = os.path.splitext(audio_path)[0] + ".m4a"
+                    print("Trying alternate path:", alt_path)
+                    if os.path.exists(alt_path):
+                        audio_path = alt_path
+                    else:
+                        raise FileNotFoundError(f"Neither {audio_path} nor {alt_path} exist!")
+
                 filename = safe_filename(song.get("filename", "") or song["song_name"])
                 mp3_path = os.path.join(self.output_folder, f"{filename}.mp3")
                 # 2. Convert to mp3 (only once, with both input and output)
                 to_mp3(audio_path, mp3_path)
-                # 3. Add metadata
-                add_metadata(
-                    mp3_path,
-                    {
-                        "title": song["song_name"],
-                        "artist": song["song_artist"],
-                        "album": album_data["album_name"],
-                        "album_artist": album_data["album_artist"],
-                        "year": album_data["album_year"],
-                        "genre": album_data["album_genre"],
-                        "track_number": song["track_number"],
-                        "cover_art_path": album_data["album_art"],
-                    }
-                )
+                # 3. Add metadata (make lyrics optional)
+                metadata = {
+                    "title": song["song_name"],
+                    "artist": song["song_artist"],
+                    "album": album_data["album_name"],
+                    "album_artist": album_data["album_artist"],
+                    "year": album_data["album_year"],
+                    "genre": album_data["album_genre"],
+                    "track_number": song["track_number"],
+                    "cover_art_path": album_data["album_art"],
+                    "lyrics": song.get("lyrics", "")
+                }
+                add_metadata(mp3_path, metadata)
             except Exception as e:
                 errors.append(f"{song['song_name']}: {e}")
 
