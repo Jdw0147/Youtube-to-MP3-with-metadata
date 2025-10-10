@@ -63,6 +63,8 @@ class ManualEntry(QWidget):
     def __init__(self, go_back):
         super().__init__()
         self.song_entries = []
+        self.output_folder = None
+
         main_layout = QVBoxLayout()
         main_layout.setSpacing(16)
         main_layout.setContentsMargins(24, 16, 24, 16)
@@ -161,6 +163,15 @@ class ManualEntry(QWidget):
         # Add the first song entry by default
         self.add_song_entry()
 
+    def select_output_folder(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
+        if folder:
+            self.output_folder = folder
+            self.dest_label.setText(f"Download Destination: {folder}")
+        else:
+            self.output_folder = None
+            self.dest_label.setText("Download Destination: Not selected")
+
     def choose_album_art(self):
         valid_exts = (".jpg", ".jpeg", ".png")
         path, _ = QFileDialog.getOpenFileName(
@@ -250,6 +261,10 @@ class ManualEntry(QWidget):
             QMessageBox.warning(self, "Missing Info", "Please enter an album name and at least one song.")
             return
 
+        if not self.output_folder:
+            QMessageBox.warning(self, "No Output Folder", "Please select a download destination folder before submitting.")
+            return
+        
         confirm = QMessageBox.question(
             self,
             "Confirm Submission",
@@ -259,29 +274,24 @@ class ManualEntry(QWidget):
         if confirm != QMessageBox.Yes:
             return
 
-        # Choose output folder
-        output_folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
-        if not output_folder:
-            return
-
         errors = []
         for song in album_data["songs"]:
             try:
                 # 1. Download audio
-                audio_path = download_youtube_audio(song["song_url"], output_folder)
+                audio_path = download_youtube_audio(song["song_url"], self.output_folder)
                 # 2. Convert to mp3
                 mp3_path = to_mp3(audio_path)
                 # 3. Add metadata
                 add_metadata(
                     mp3_path,
-                    title=song["song_name"],
-                    artist=song["song_artist"],
-                    album=album_data["album_name"],
-                    album_artist=album_data["album_artist"],
-                    year=album_data["album_year"],
-                    genre=album_data["album_genre"],
-                    track=song["track_number"],
-                    cover_path=album_data["album_art"]
+                    song["song_name"],
+                    song["song_artist"],
+                    album_data["album_name"],
+                    album_data["album_artist"],
+                    album_data["album_year"],
+                    album_data["album_genre"],
+                    song["track_number"],
+                    album_data["album_art"]
                 )
             except Exception as e:
                 errors.append(f"{song['song_name']}: {e}")

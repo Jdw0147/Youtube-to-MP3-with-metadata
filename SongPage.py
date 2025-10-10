@@ -233,12 +233,12 @@ class SongPage(QWidget):
 
             # Processing
             QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
-            download_youtube_audio(yt_url)
-            to_mp3("temp.m4a", output_mp3_path)
+            audio_path = download_youtube_audio(yt_url, output_path)  # <-- Pass both URL and folder
+            to_mp3(audio_path, output_mp3_path)
             add_metadata(output_mp3_path, metadata)
 
-            if os.path.exists("temp.m4a"):
-                os.remove("temp.m4a")
+            if os.path.exists(audio_path):
+                os.remove(audio_path)
 
             QMessageBox.information(self, "Success", f"MP3 file saved to:\n{output_mp3_path}")
 

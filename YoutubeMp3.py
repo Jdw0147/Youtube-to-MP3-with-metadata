@@ -6,10 +6,11 @@ from mutagen.mp3 import MP3 # To edit MP3 metadata
 from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
 
 # Downloading a Youtube video from a link
-def download_youtube_audio(youtube_url, output_filename="temp"):
+def download_youtube_audio(youtube_url, output_folder):
+    output_template = os.path.join(output_folder, "%(title)s.%(ext)s")
     ydl_opts = {
         'format': 'bestaudio/best', # Downloading the best audio quality available
-        'outtmpl': output_filename, # Setting the output filename
+        'outtmpl': output_template, # Setting the output filename
         'quiet': False, # Not showing download process
         'postprocessors': [{    # Done after downloading
             'key': 'FFmpegExtractAudio', # Extract just audio using ffmpeg
@@ -21,8 +22,11 @@ def download_youtube_audio(youtube_url, output_filename="temp"):
     # Downloading process
     print("[*] Downloading audio from Youtube...")
     with YoutubeDL(ydl_opts) as ydl:
-        ydl.download([youtube_url]) # Downloading the video (youtube_url) and applying the options (ydl_opts)
+        info = ydl.extract_info(youtube_url)
+        # This will return the actual file path of the downloaded file
+        downloaded_file = ydl.prepare_filename(info)
     print("[+] Download complete.")
+    return downloaded_file
 
 # Function that converts the m4a file into an mp3 file
 def to_mp3(input_file, output_file="download.mp3"):
