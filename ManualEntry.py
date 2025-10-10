@@ -2,10 +2,16 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit,
     QFileDialog, QTextEdit, QMessageBox, QScrollArea, QGridLayout, QGroupBox
 )
+import os
 from PIL import Image
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
+import re
+
+def safe_filename(name):
+    # Remove invalid filename characters for Windows
+    return re.sub(r'[\\/*?:"<>|]', "", name).strip() or "untitled"
 
 class SongEntry(QGroupBox):
     def __init__(self, song_number, remove_callback):
@@ -149,6 +155,14 @@ class ManualEntry(QWidget):
         songs_box.setLayout(songs_box_layout)
         main_layout.addWidget(songs_box)
 
+        dest_layout = QHBoxLayout()
+        self.dest_label = QLabel("Download Destination: Not selected")
+        select_dest_btn = QPushButton("Choose Folder")
+        select_dest_btn.clicked.connect(self.select_output_folder)
+        dest_layout.addWidget(self.dest_label)
+        dest_layout.addWidget(select_dest_btn)
+        main_layout.addLayout(dest_layout)
+
         # Add Song button
         add_song_btn = QPushButton("Add Song")
         add_song_btn.clicked.connect(self.add_song_entry)
@@ -279,19 +293,23 @@ class ManualEntry(QWidget):
             try:
                 # 1. Download audio
                 audio_path = download_youtube_audio(song["song_url"], self.output_folder)
-                # 2. Convert to mp3
-                mp3_path = to_mp3(audio_path)
+                filename = safe_filename(song.get("filename", "") or song["song_name"])
+                mp3_path = os.path.join(self.output_folder, f"{filename}.mp3")
+                # 2. Convert to mp3 (only once, with both input and output)
+                to_mp3(audio_path, mp3_path)
                 # 3. Add metadata
                 add_metadata(
                     mp3_path,
-                    song["song_name"],
-                    song["song_artist"],
-                    album_data["album_name"],
-                    album_data["album_artist"],
-                    album_data["album_year"],
-                    album_data["album_genre"],
-                    song["track_number"],
-                    album_data["album_art"]
+                    {
+                        "title": song["song_name"],
+                        "artist": song["song_artist"],
+                        "album": album_data["album_name"],
+                        "album_artist": album_data["album_artist"],
+                        "year": album_data["album_year"],
+                        "genre": album_data["album_genre"],
+                        "track_number": song["track_number"],
+                        "cover_art_path": album_data["album_art"],
+                    }
                 )
             except Exception as e:
                 errors.append(f"{song['song_name']}: {e}")
