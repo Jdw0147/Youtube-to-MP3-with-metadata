@@ -138,6 +138,12 @@ into where it searches for local files, it kinda bugs out and doesn't recognize 
 A new feature of this program is dealing with 'invalid' image types.  Spotify and Apple music are very particular about what filetypes they allow/will display (png, jpg).  But to counteract the irritating process of finding another third party app to convert your album cover to a valid type, I've added a feature where if the entered image is not a valid type, the user will be notified of this and prompted to change the file type.  They can either convert the image to a valid type (options given are jpg and png) or they can cancel and return to the selection screen.
 ![Image Conversion](imagetype.png)
 
+## Problems
+### 403 - Forbidden Error
+I have yet to encounter serious bugs when using this program, but one I've encountered occasionally is a 403 forbidden error when attempting the download process.  This is most always due to YouTube updating its site, and so yt_dlp needs to update to.  If you run into the 403 forbidden error simply update yt_dlp by entering the following command on the terminal:
+- `pip install -U yt-dlp`
+
+## Conclusion
 Making this project was very fun and I got to gain some very interesting experience in 
 python GUI creation.  I've only ever used tkinter before when it comes to python interfaces
 so it was neat learning a new method of styling python and I'll definitely be using PySide6
