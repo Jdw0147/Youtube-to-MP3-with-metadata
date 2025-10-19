@@ -16,44 +16,51 @@ def safe_filename(name):
 class SongEntry(QGroupBox):
     def __init__(self, song_number, remove_callback):
         super().__init__(f"Song {song_number}")
+        self.setStyleSheet("QGroupBox { margin-top: 4px; font-size: 10pt; padding: 2px 2px 2px 6px; } ")
         self.remove_callback = remove_callback
         layout = QVBoxLayout()
-        layout.setSpacing(8)
-        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(2)
+        layout.setContentsMargins(6, 4, 6, 4)
 
         url_row = QHBoxLayout()
+        url_row.setSpacing(4)
         self.song_url = QLineEdit()
         self.song_url.setPlaceholderText("Song URL")
-        self.song_url.setMinimumWidth(220)
-        url_row.addWidget(QLabel("Song URL:"))
+        self.song_url.setMinimumWidth(120)
+        self.song_url.setMaximumWidth(180)
+        url_row.addWidget(QLabel("URL:"))
         url_row.addWidget(self.song_url, stretch=2)
 
         self.track_number = QLineEdit()
-        self.track_number.setPlaceholderText("Track #")
-        self.track_number.setFixedWidth(60)
-        url_row.addWidget(QLabel("Track #:"))
+        self.track_number.setPlaceholderText("#")
+        self.track_number.setFixedWidth(36)
+        url_row.addWidget(QLabel("#"))
         url_row.addWidget(self.track_number)
 
         layout.addLayout(url_row)
 
         # Second row: Song Name and Song Artist
         name_row = QHBoxLayout()
+        name_row.setSpacing(4)
         self.song_name = QLineEdit()
-        self.song_name.setPlaceholderText("Song Name")
-        self.song_name.setMinimumWidth(180)
-        name_row.addWidget(QLabel("Song Name:"))
+        self.song_name.setPlaceholderText("Name")
+        self.song_name.setMinimumWidth(80)
+        self.song_name.setMaximumWidth(120)
+        name_row.addWidget(QLabel("Name:"))
         name_row.addWidget(self.song_name, stretch=2)
 
         self.song_artist = QLineEdit()
-        self.song_artist.setPlaceholderText("Artist (leave blank to use Album Artist)")
-        self.song_artist.setMinimumWidth(120)
-        self.song_artist.setMaximumWidth(180)
-        name_row.addWidget(QLabel("Song Artist:"))
+        self.song_artist.setPlaceholderText("Artist (or Album Artist)")
+        self.song_artist.setMinimumWidth(80)
+        self.song_artist.setMaximumWidth(120)
+        name_row.addWidget(QLabel("Artist:"))
         name_row.addWidget(self.song_artist, stretch=1)
 
         layout.addLayout(name_row)
         # Remove button
         remove_btn = QPushButton("Remove")
+        remove_btn.setFixedWidth(60)
+        remove_btn.setStyleSheet("padding:2px 4px;font-size:9pt;")
         remove_btn.clicked.connect(self.remove_self)
         layout.addWidget(remove_btn, alignment=Qt.AlignRight)
 
@@ -145,7 +152,7 @@ class ManualEntry(QWidget):
         songs_box_layout = QVBoxLayout()
         self.songs_area = QScrollArea()
         self.songs_area.setWidgetResizable(True)
-        self.songs_area.setMinimumHeight(350)
+        # Removed setMinimumHeight to allow compactness
         self.songs_widget = QWidget()
         self.songs_widget.setStyleSheet("background: white;")
         self.songs_layout = QVBoxLayout()

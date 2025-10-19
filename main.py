@@ -14,30 +14,34 @@ class LandingPage(QWidget):
     def __init__(self, switch_to_song, switch_to_album,):
         super().__init__()
         layout = QVBoxLayout()
+        layout.setSpacing(32)
+        layout.setContentsMargins(32, 32, 32, 32)
         label = QLabel("YouTube to MP3 Converter")
         label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet("font-size: 20px; font-weight: bold;")
         layout.addWidget(label)
 
         h_layout = QHBoxLayout()
+        h_layout.setSpacing(60)
 
         song_layout = QVBoxLayout()
         btn_song = QPushButton()
-        btn_song.setFixedSize(80, 80)
+        btn_song.setFixedSize(140, 140)
         btn_song.setText("🎵")
-        btn_song.setStyleSheet("font-size: 32px;")
+        btn_song.setStyleSheet("font-size: 64px;")
         btn_song.clicked.connect(switch_to_song)
         song_label = QLabel("Convert a single song with full metadata control.")
         song_label.setWordWrap(True)
         song_label.setAlignment(Qt.AlignCenter)
         song_layout.addWidget(btn_song, alignment=Qt.AlignCenter)
-        song_layout.addWidget(song_label)
+        song_layout.addWidget(song_label, alignment=Qt.AlignCenter)
 
         # Album button and description
         album_layout = QVBoxLayout()
         btn_album = QPushButton()
-        btn_album.setFixedSize(80, 80)
+        btn_album.setFixedSize(140, 140)
         btn_album.setText("💿")
-        btn_album.setStyleSheet("font-size: 32px;")
+        btn_album.setStyleSheet("font-size: 64px;")
         btn_album.clicked.connect(switch_to_album)
         album_label = QLabel(
             "Import multiple songs individually or from a YouTube playlist, "
@@ -46,16 +50,14 @@ class LandingPage(QWidget):
         album_label.setWordWrap(True)
         album_label.setAlignment(Qt.AlignCenter)
         album_layout.addWidget(btn_album, alignment=Qt.AlignCenter)
-        album_layout.addWidget(album_label)
+        album_layout.addWidget(album_label, alignment=Qt.AlignCenter)
 
         # Add layouts to horizontal layout
+        h_layout.addStretch(1)
         h_layout.addLayout(song_layout)
-        # Vertical line separator
-        vline = QFrame()
-        vline.setFrameShape(QFrame.VLine)
-        vline.setFrameShadow(QFrame.Sunken)
-        h_layout.addWidget(vline)
+        h_layout.addStretch(1)
         h_layout.addLayout(album_layout)
+        h_layout.addStretch(1)
 
         layout.addSpacing(20)
         layout.addLayout(h_layout)
@@ -109,5 +111,6 @@ if __name__ == "__main__":
     except FileNotFoundError:
         pass
     window = MainWindow()
+    window.setFixedSize(700, 700)  # Square window
     window.show()
     sys.exit(app.exec())
