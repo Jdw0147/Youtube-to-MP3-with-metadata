@@ -1,5 +1,13 @@
 /* Stylesheet for youtube to MP3 Qt Widgets */
 
+/* Sleek thin song entry rows */
+QGroupBox[songEntry="true"] {
+    background: #fafbfc;
+    border-bottom: 1px solid #e3e6ea;
+    margin: 0px;
+    padding: 0px;
+}
+
 /* General background for the window */
 QWidget {
     background-color: #f4f6f9;
