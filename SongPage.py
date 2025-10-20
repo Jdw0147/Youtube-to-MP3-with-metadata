@@ -10,15 +10,19 @@ from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 from PIL import Image
 
 
-class YoutubeMp3Window(QWidget):
+class SongPage(QWidget):
     """
     Main window for the YouTube → MP3 converter app using PySide6 (Qt).
     Handles all UI logic (layouts, album art preview, dialogs).
     """
 
-    def __init__(self):
+    def __init__(self, go_back=None):
         super().__init__()
         self.setWindowTitle("Convert YouTube to MP3")
+        back_btn = QPushButton("← Back")
+        back_btn.setFixedWidth(80)
+        if go_back:
+            back_btn.clicked.connect(go_back) 
 
         # =========
         # VARIABLES
@@ -123,6 +127,7 @@ class YoutubeMp3Window(QWidget):
         # MAIN LAYOUT
         # =========
         main_layout = QVBoxLayout()
+        main_layout.addWidget(back_btn, alignment=Qt.AlignLeft)
         main_layout.addLayout(top_url_layout)
         main_layout.addLayout(top_layout)
         main_layout.addLayout(middle_layout)
@@ -228,31 +233,14 @@ class YoutubeMp3Window(QWidget):
 
             # Processing
             QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
-            download_youtube_audio(yt_url)
-            to_mp3("temp.m4a", output_mp3_path)
+            audio_path = download_youtube_audio(yt_url, output_path)  # <-- Pass both URL and folder
+            to_mp3(audio_path, output_mp3_path)
             add_metadata(output_mp3_path, metadata)
 
-            if os.path.exists("temp.m4a"):
-                os.remove("temp.m4a")
+            if os.path.exists(audio_path):
+                os.remove(audio_path)
 
             QMessageBox.information(self, "Success", f"MP3 file saved to:\n{output_mp3_path}")
 
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
-
-
-# ============
-# ENTRY POINT
-# ============
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-
-    with open("style.qss", "r") as f:
-        app.setStyleSheet(f.read())
-
-    window = YoutubeMp3Window()
-
-    window.download_btn.setObjectName("DownloadBtn")
-    
-    window.show()
-    sys.exit(app.exec())
