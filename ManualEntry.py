@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 import re
+import yt_dlp
 
 def safe_filename(name):
     # Remove invalid filename characters for Windows
@@ -73,6 +74,17 @@ class ManualEntry(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setSpacing(16)
         main_layout.setContentsMargins(24, 16, 24, 16)
+
+        # Playlist URL
+        playlist_layout = QHBoxLayout()
+        self.playlist_url = QLineEdit()
+        self.playlist_url.setPlaceholderText("Playlist URL (If applicable)")
+        playlist_layout.addWidget(QLabel("Playlist URL (If applicable):"))
+        playlist_layout.addWidget(self.playlist_url)
+        load_playlist_btn = QPushButton("Load Playlist")
+        load_playlist_btn.clicked.connect(self.load_playlist)
+        playlist_layout.addWidget(load_playlist_btn)
+        main_layout.addLayout(playlist_layout)
 
         # Back button
         back_btn = QPushButton("← Back")
@@ -177,6 +189,47 @@ class ManualEntry(QWidget):
 
         # Add the first song entry by default
         self.add_song_entry()
+
+    def is_youtube_playlist(self, url):
+        # Checks to see if URL leads to a youtube playlist
+        return "youtube.com/playlist?list=" in url or "youtube.com/watch?v=" in url and "list=" in url
+    
+    def load_playlist(self):
+        url = self.playlist_url.text().strip()
+        if not url or not self.is_youtube_playlist(url):
+            QMessageBox.warning(self, "Invalid URL", "Please enter a valid YouTube playlist URL.")
+            return
+        
+        try:
+            ydl_opts = {
+                'quiet': True,
+                'extract_flat': True,
+                'skip_download': True,
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                if 'entries' not in info:
+                    raise Exception("No videos found in playlist.")
+                videos = info['entries']
+        except Exception as e:
+            QMessageBox.critical(self, "Playlist Error", f"Could not load playlist:\n{e}")
+            return
+        
+        # Remove existing song entries
+        for entry in self.song_entries[:]:
+            self.remove_song_entry(entry)
+        
+        # Add entries from playlist
+        for idk, video in enumerate(videos, 1):
+            entry = SongEntry(idk, self.remove_song_entry)
+            entry.song_url.setText(f"https://www.youtube.com/watch?v={video['id']}")
+            entry.song_name.setText(video.get('title', ''))
+            entry.track_number.setText(str(idk))
+            self.song_entries.append(entry)
+            self.songs_layout.addWidget(entry)
+
+        QMessageBox.information(self, "Playlist Loaded", f"Loaded {len(videos)} songs from playlist.")
+
 
     def select_output_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
