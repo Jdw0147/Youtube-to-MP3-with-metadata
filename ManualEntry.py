@@ -154,6 +154,11 @@ class ManualEntry(QWidget):
         songs_box.setLayout(songs_box_layout)
         main_layout.addWidget(songs_box)
 
+        # Add Song button
+        add_song_btn = QPushButton("Add Song")
+        add_song_btn.clicked.connect(self.add_song_entry)
+        main_layout.addWidget(add_song_btn)
+
         dest_layout = QHBoxLayout()
         self.dest_label = QLabel(f"Download Destination: {self.output_folder}")
         select_dest_btn = QPushButton("Choose Folder")
@@ -162,10 +167,6 @@ class ManualEntry(QWidget):
         dest_layout.addWidget(select_dest_btn)
         main_layout.addLayout(dest_layout)
 
-        # Add Song button
-        add_song_btn = QPushButton("Add Song")
-        add_song_btn.clicked.connect(self.add_song_entry)
-        main_layout.addWidget(add_song_btn)
 
         submit_btn = QPushButton("Submit")
         submit_btn.clicked.connect(self.submit_album)
