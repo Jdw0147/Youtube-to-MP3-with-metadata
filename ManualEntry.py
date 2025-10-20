@@ -157,8 +157,9 @@ class ManualEntry(QWidget):
         # Add Song button
         add_song_btn = QPushButton("Add Song")
         add_song_btn.clicked.connect(self.add_song_entry)
-        main_layout.addWidget(add_song_btn)
+        main_layout.addWidget(add_song_btn, alignment=Qt.AlignRight)
 
+        # Download Destination
         dest_layout = QHBoxLayout()
         self.dest_label = QLabel(f"Download Destination: {self.output_folder}")
         select_dest_btn = QPushButton("Choose Folder")
@@ -317,6 +318,7 @@ class ManualEntry(QWidget):
                     except Exception as cleanup_err:
                         print(f"Could not remove temp file {audio_path}: {cleanup_err}")
                         
+
                 # 4. Add metadata (make lyrics optional)
                 metadata = {
                     "title": song["song_name"],
