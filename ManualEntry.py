@@ -257,7 +257,7 @@ class ManualEntry(QWidget):
         album_artist = album_data["album_artist"]
         for entry in self.song_entries:
             song_name = entry.song_name.text().strip()
-            song_artist = entry.song_artist.text().strip() or album_artist
+            song_artist = album_artist
             track_number = entry.track_number.text().strip()
             song_url = entry.song_url.text().strip()
             album_data["songs"].append({
