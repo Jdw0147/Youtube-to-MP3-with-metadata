@@ -75,17 +75,6 @@ class ManualEntry(QWidget):
         main_layout.setSpacing(16)
         main_layout.setContentsMargins(24, 16, 24, 16)
 
-        # Playlist URL
-        playlist_layout = QHBoxLayout()
-        self.playlist_url = QLineEdit()
-        self.playlist_url.setPlaceholderText("Playlist URL (If applicable)")
-        playlist_layout.addWidget(QLabel("Playlist URL (If applicable):"))
-        playlist_layout.addWidget(self.playlist_url)
-        load_playlist_btn = QPushButton("Load Playlist")
-        load_playlist_btn.clicked.connect(self.load_playlist)
-        playlist_layout.addWidget(load_playlist_btn)
-        main_layout.addLayout(playlist_layout)
-
         # Back button
         back_btn = QPushButton("← Back")
         back_btn.setFixedWidth(80)
@@ -147,9 +136,20 @@ class ManualEntry(QWidget):
         main_layout.addLayout(top_layout)
 
         # Info label about song artist fallback
-        info_label = QLabel("Tip: If a song's Artist is left blank, the Album Artist will be used.")
+        info_label = QLabel("Tip: You can paste the link to a youtube playlist to fill out all of the song fields instantly!.")
         info_label.setStyleSheet("color: #666; font-size: 11px;")
         main_layout.addWidget(info_label)
+
+        # Playlist URL
+        playlist_layout = QHBoxLayout()
+        self.playlist_url = QLineEdit()
+        self.playlist_url.setPlaceholderText("Playlist URL (If applicable)")
+        playlist_layout.addWidget(QLabel("Playlist URL (If applicable):"))
+        playlist_layout.addWidget(self.playlist_url)
+        load_playlist_btn = QPushButton("Load Playlist")
+        load_playlist_btn.clicked.connect(self.load_playlist)
+        playlist_layout.addWidget(load_playlist_btn)
+        main_layout.addLayout(playlist_layout)
 
         # Songs section (scrollable)
         songs_box = QGroupBox("Songs")

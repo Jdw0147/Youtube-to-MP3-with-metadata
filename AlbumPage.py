@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QLabel
 from PySide6.QtCore import Qt
+from ManualEntry import ManualEntry
 
 class AlbumPage(QWidget):
-   def __init__(self, go_back, show_manual_entry, show_playlist_import):
+   def __init__(self, go_back, show_manual_entry):
         super().__init__()
         layout = QVBoxLayout()
         layout.setSpacing(32)
@@ -40,27 +41,10 @@ class AlbumPage(QWidget):
         manual_layout.addWidget(btn_manual, alignment=Qt.AlignCenter)
         manual_layout.addWidget(manual_label, alignment=Qt.AlignCenter)
 
-        # Playlist Import option
-        playlist_layout = QVBoxLayout()
-        btn_playlist = QPushButton("📋")
-        btn_playlist.setFixedSize(140, 140)
-        btn_playlist.setStyleSheet("font-size: 64px;")
-        btn_playlist.clicked.connect(show_playlist_import)
-        playlist_label = QLabel(
-            "Import from YouTube Playlist\n\n"
-            "Paste a YouTube playlist link and automatically add all songs from that playlist.\n"
-            "Best for quickly importing many songs."
-        )
-        playlist_label.setWordWrap(True)
-        playlist_label.setAlignment(Qt.AlignCenter)
-        playlist_layout.addWidget(btn_playlist, alignment=Qt.AlignCenter)
-        playlist_layout.addWidget(playlist_label, alignment=Qt.AlignCenter)
-
         # Add layouts to horizontal layout
         h_layout.addStretch(1)
         h_layout.addLayout(manual_layout)
         h_layout.addStretch(1)
-        h_layout.addLayout(playlist_layout)
         h_layout.addStretch(1)
 
         layout.addSpacing(20)
