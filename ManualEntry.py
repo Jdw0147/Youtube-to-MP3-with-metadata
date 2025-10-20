@@ -305,9 +305,18 @@ class ManualEntry(QWidget):
 
                 filename = safe_filename(song.get("filename", "") or song["song_name"])
                 mp3_path = os.path.join(self.output_folder, f"{filename}.mp3")
+
                 # 2. Convert to mp3 (only once, with both input and output)
                 to_mp3(audio_path, mp3_path)
-                # 3. Add metadata (make lyrics optional)
+
+                # 3. Cleanup
+                if os.path.exists(audio_path):
+                    try:
+                        os.remove(audio_path)
+                    except Exception as cleanup_err:
+                        print(f"Could not remove temp file {audio_path}: {cleanup_err}")
+                        
+                # 4. Add metadata (make lyrics optional)
                 metadata = {
                     "title": song["song_name"],
                     "artist": song["song_artist"],
