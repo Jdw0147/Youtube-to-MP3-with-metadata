@@ -68,7 +68,7 @@ class ManualEntry(QWidget):
     def __init__(self, go_back):
         super().__init__()
         self.song_entries = []
-        self.output_folder = None
+        self.output_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 
         main_layout = QVBoxLayout()
         main_layout.setSpacing(16)
@@ -155,7 +155,7 @@ class ManualEntry(QWidget):
         main_layout.addWidget(songs_box)
 
         dest_layout = QHBoxLayout()
-        self.dest_label = QLabel("Download Destination: Not selected")
+        self.dest_label = QLabel(f"Download Destination: {self.output_folder}")
         select_dest_btn = QPushButton("Choose Folder")
         select_dest_btn.clicked.connect(self.select_output_folder)
         dest_layout.addWidget(self.dest_label)
