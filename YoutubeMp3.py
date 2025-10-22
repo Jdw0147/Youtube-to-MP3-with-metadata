@@ -8,6 +8,7 @@ from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, APIC, TRCK, USL
 # Downloading a Youtube video from a link
 def download_youtube_audio(youtube_url, output_folder):
     output_template = os.path.join(output_folder, "%(title)s.%(ext)s")
+    print(f'Output template: {output_template}')
     ydl_opts = {
         'format': 'bestaudio/best', # Downloading the best audio quality available
         'outtmpl': output_template, # Setting the output filename
@@ -26,6 +27,7 @@ def download_youtube_audio(youtube_url, output_folder):
         # This will return the actual file path of the downloaded file
         downloaded_file = ydl.prepare_filename(info)
     print("[+] Download complete.")
+    print(f'Downloaded file: {downloaded_file}')
     return downloaded_file
 
 # Function that converts the m4a file into an mp3 file
@@ -41,9 +43,9 @@ def to_mp3(input_file, output_file="download.mp3"):
         output_file
     ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL # Hides ffmpeg output
     )
-    
-
+    print(f'Output file: {output_file}')
     print("[+] Conversion complete.")
+    return output_file
 
     # Function to add metadata to the mp3 file
 def add_metadata(mp3_file, metadata):

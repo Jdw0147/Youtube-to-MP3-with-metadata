@@ -301,8 +301,15 @@ class SongPage(QWidget):
 
             # Processing
             QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
+            print(f'Output Path: {output_path}\nFilename: {filename}')
             audio_path = download_youtube_audio(yt_url, output_path)  # <-- Pass both URL and folder
+            print("Downloaded audio path:", audio_path)
+            mp3_path = to_mp3(audio_path, output_mp3_path)
+            print("Converted mp3 path:", mp3_path)
             to_mp3(audio_path, output_mp3_path)
+            if not os.path.exists(mp3_path):
+                print("MP3 file does not exist after conversion:", mp3_path)
+            print(f'Output MP3 path: {output_mp3_path}')
             add_metadata(output_mp3_path, metadata)
 
             if os.path.exists(audio_path):
