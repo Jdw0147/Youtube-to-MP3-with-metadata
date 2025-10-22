@@ -238,6 +238,35 @@ class ManualEntry(QWidget):
         self.album_name.setText(result.get('title', ''))
         self.album_artist.setText(result.get('artist', ''))
 
+        original_year = ""
+        master_tracklist = []
+        album_name = ""
+        album_artist = ""
+
+        master_id = result.get('master_id')
+        if master_id:
+            try:
+                import requests
+                master_url = f"https://api.discogs.com/masters/{master_id}"
+                master_data = requests.get(master_url, params={'token': 'EurItYjbxmcFweNWLKVPinAygglnADxrWDDkxFfc'}).json()
+                original_year = str(master_data.get('year', ''))
+                master_tracklist = master_data.get('tracklist', [])
+                album_name = master_data.get('title', '')
+                # Get artist name from master_data['artists']
+                artists = master_data.get('artists', [])
+                if artists and isinstance(artists, list):
+                    album_artist = artists[0].get('name', '')
+            except Exception as e:
+                print(f"Error fetching master release: {e}")
+
+        if not album_name:
+            album_name = result.get('title', '')
+        if not album_artist:
+            album_artist = result.get('artist', '')
+
+        self.album_name.setText(album_name)
+        self.album_artist.setText(album_artist)
+
         # Fetch full release data for tracklist, year, genre
         resource_url = result.get('resource_url')
         if resource_url:
@@ -245,7 +274,8 @@ class ManualEntry(QWidget):
                 import requests
                 release_data = requests.get(resource_url, params={'token': 'EurItYjbxmcFweNWLKVPinAygglnADxrWDDkxFfc'}).json()
                 # Year and genre
-                self.album_year.setText(str(release_data.get('year', '')))
+                year = original_year or str(release_data.get('year', ''))
+                self.album_year.setText(year)
                 genres = release_data.get('genres', []) or release_data.get('genre', [])
                 self.album_genre.setText(', '.join(genres) if genres else '')
 
@@ -254,7 +284,7 @@ class ManualEntry(QWidget):
                     self.remove_song_entry(entry)
 
                 # Fill song entries from tracklist
-                tracklist = release_data.get('tracklist', [])
+                tracklist = master_tracklist if master_tracklist else release_data.get('tracklist', [])
                 for idx, track in enumerate(tracklist, 1):
                     entry = SongEntry(idx, self.remove_song_entry)
                     entry.song_name.setText(track.get('title', ''))
