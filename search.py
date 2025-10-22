@@ -4,11 +4,11 @@ DISCOGS_TOKEN = 'EurItYjbxmcFweNWLKVPinAygglnADxrWDDkxFfc'
 url = 'https://api.discogs.com/database/search'
 def search_song(song_name, artist_name = None, album_name = None):
     params = {
-        'track': song_name,
+        'q': f"{song_name} {artist_name}" if artist_name else song_name,
         'type': 'release',
         'format': 'File',
         'token': DISCOGS_TOKEN,
-        "per_page": 5,
+        "per_page": 10,
         "country": "US"
     }
 
@@ -23,11 +23,11 @@ def search_song(song_name, artist_name = None, album_name = None):
 
 def search_album(album_name, artist_name = None):
     params = {
-        'q': album_name,
+        'q': f"{album_name} {artist_name}" if artist_name else album_name,
         'type': 'release',
         'format': 'File',
         'token': DISCOGS_TOKEN,
-        "per_page": 5,
+        "per_page": 10,
         "country": "US"
     }
     if artist_name:

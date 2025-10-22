@@ -27,6 +27,7 @@ class SongPage(QWidget):
         # =========
         # VARIABLES
         # =========
+        self.autocomplete_results = {}
         self.cover_art_path = ""  # Will hold string path to image file
 
         # ===========
@@ -204,6 +205,7 @@ class SongPage(QWidget):
     # Autocomplete Logic
     def update_autocomplete(self, text):
         self.autocomplete_list.clear()
+        self.autocomplete_results.clear()
         if not text.strip():
             self.autocomplete_list.hide()
             return
@@ -215,6 +217,7 @@ class SongPage(QWidget):
                 for result in results:
                     display = f"{result['title']} ({result.get('year', '')})"
                     self.autocomplete_list.addItem(display)
+                    self.autocomplete_results[display] = result
             self.autocomplete_list.show()
         except Exception:
             self.autocomplete_list.addItem("No results found")

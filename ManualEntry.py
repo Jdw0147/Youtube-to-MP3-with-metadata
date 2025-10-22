@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit,
-    QFileDialog, QTextEdit, QMessageBox, QScrollArea, QGridLayout, QGroupBox
+    QFileDialog, QTextEdit, QMessageBox, QScrollArea, QGridLayout, QGroupBox, QListWidget
 )
 import os
 from PIL import Image
@@ -9,6 +9,7 @@ from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 import re
 import yt_dlp
+from search import search_album
 
 def safe_filename(name):
     # Remove invalid filename characters for Windows
@@ -80,6 +81,21 @@ class ManualEntry(QWidget):
         back_btn.setFixedWidth(80)
         back_btn.clicked.connect(go_back)
         main_layout.addWidget(back_btn, alignment=Qt.AlignLeft)
+
+        # --- Album Search Bar ---
+        self.album_search_bar = QLineEdit()
+        self.album_search_bar.setPlaceholderText("Search for album...")
+        self.album_search_results = QListWidget()
+        self.album_search_results.setMaximumHeight(120)
+        self.album_search_results.hide()
+        self.album_search_map = {}
+
+        # Add search bar and results below album info fields
+        main_layout.addWidget(self.album_search_bar)
+        main_layout.addWidget(self.album_search_results)
+
+        self.album_search_bar.textChanged.connect(self.update_album_search)
+        self.album_search_results.itemClicked.connect(self.fill_album_fields_from_search)
 
         # --- Top: Album Art + Album Info ---
         top_layout = QHBoxLayout()
@@ -189,6 +205,89 @@ class ManualEntry(QWidget):
 
         # Add the first song entry by default
         self.add_song_entry()
+
+    def update_album_search(self, text):
+        self.album_search_results.clear()
+        self.album_search_map.clear()
+        if not text.strip():
+            self.album_search_results.hide()
+            return
+        try:
+            results = search_album(text)
+            if not results:
+                self.album_search_results.addItem("No results found")
+            else:
+                for result in results:
+                    display = f"{result['title']} ({result.get('year', '')})"
+                    self.album_search_results.addItem(display)
+                    self.album_search_map[display] = result
+            self.album_search_results.show()
+        except Exception:
+            self.album_search_results.addItem("No results found")
+            self.album_search_results.show()
+
+    def fill_album_fields_from_search(self, item):
+        text = item.text()
+        if text == "No results found":
+            return
+        result = self.album_search_map.get(text)
+        if not result:
+            return
+
+        # Set album name and artist from result
+        self.album_name.setText(result.get('title', ''))
+        self.album_artist.setText(result.get('artist', ''))
+
+        # Fetch full release data for tracklist, year, genre
+        resource_url = result.get('resource_url')
+        if resource_url:
+            try:
+                import requests
+                release_data = requests.get(resource_url, params={'token': 'EurItYjbxmcFweNWLKVPinAygglnADxrWDDkxFfc'}).json()
+                # Year and genre
+                self.album_year.setText(str(release_data.get('year', '')))
+                genres = release_data.get('genres', []) or release_data.get('genre', [])
+                self.album_genre.setText(', '.join(genres) if genres else '')
+
+                # Remove existing song entries
+                for entry in self.song_entries[:]:
+                    self.remove_song_entry(entry)
+
+                # Fill song entries from tracklist
+                tracklist = release_data.get('tracklist', [])
+                for idx, track in enumerate(tracklist, 1):
+                    entry = SongEntry(idx, self.remove_song_entry)
+                    entry.song_name.setText(track.get('title', ''))
+                    entry.track_number.setText(str(idx))
+                    self.song_entries.append(entry)
+                    self.songs_layout.addWidget(entry)
+            except Exception as e:
+                print(f"Error fetching release data: {e}")
+
+        # Set album art if available
+        cover_url = result.get('cover_image')
+        if cover_url:
+            self.set_album_art_from_url(cover_url)
+        self.album_search_results.hide()
+
+    def set_album_art_from_url(self, url):
+        try:
+            import requests
+            from PySide6.QtGui import QImage
+            response = requests.get(url)
+            image = QImage()
+            image.loadFromData(response.content)
+            pixmap = QPixmap.fromImage(image)
+            scaled_pixmap = pixmap.scaled(
+                self.album_art_label.width(),
+                self.album_art_label.height(),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+            self.album_art_label.setPixmap(scaled_pixmap)
+            self.album_art_path = url
+        except Exception:
+            pass
 
     def is_youtube_playlist(self, url):
         # Checks to see if URL leads to a youtube playlist
