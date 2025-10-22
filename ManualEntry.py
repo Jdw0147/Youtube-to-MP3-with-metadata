@@ -242,6 +242,7 @@ class ManualEntry(QWidget):
         master_tracklist = []
         album_name = ""
         album_artist = ""
+        album_art_url = None
 
         master_id = result.get('master_id')
         if master_id:
@@ -256,6 +257,12 @@ class ManualEntry(QWidget):
                 artists = master_data.get('artists', [])
                 if artists and isinstance(artists, list):
                     album_artist = artists[0].get('name', '')
+                    # Get album art from master images
+                images = master_data.get('images', [])
+                if images:
+                    # Prefer 'primary' image, else first image
+                    primary_images = [img for img in images if img.get('type') == 'primary']
+                    album_art_url = (primary_images[0]['uri'] if primary_images else images[0]['uri'])
             except Exception as e:
                 print(f"Error fetching master release: {e}")
 
@@ -291,33 +298,61 @@ class ManualEntry(QWidget):
                     entry.track_number.setText(str(idx))
                     self.song_entries.append(entry)
                     self.songs_layout.addWidget(entry)
+
+                # Fallback to release cover image if master art not found
+                if not album_art_url:
+                    album_art_url = release_data.get('cover_image')
+
             except Exception as e:
                 print(f"Error fetching release data: {e}")
 
         # Set album art if available
-        cover_url = result.get('cover_image')
-        if cover_url:
-            self.set_album_art_from_url(cover_url)
+        if album_art_url:
+            self.set_album_art_from_url(album_art_url)
+        else:
+            self.album_art_label.setText("No Art")
+            self.album_art_label.setPixmap(QPixmap())  # Clear pixmap
         self.album_search_results.hide()
 
     def set_album_art_from_url(self, url):
+        print("Trying to load album art from URL:", url)
         try:
             import requests
             from PySide6.QtGui import QImage
-            response = requests.get(url)
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+            }
+            response = requests.get(url, headers=headers)
+            if response.status_code != 200:
+                print("Failed to download image, status code:", response.status_code)
+                self.album_art_label.setText("No Art")
+                self.album_art_label.setPixmap(QPixmap())
+                self.album_art_path = None
+                return
             image = QImage()
             image.loadFromData(response.content)
             pixmap = QPixmap.fromImage(image)
-            scaled_pixmap = pixmap.scaled(
-                self.album_art_label.width(),
-                self.album_art_label.height(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
-            )
-            self.album_art_label.setPixmap(scaled_pixmap)
-            self.album_art_path = url
-        except Exception:
-            pass
+            print("Pixmap is null?", pixmap.isNull())
+            if not pixmap.isNull():
+                scaled_pixmap = pixmap.scaled(
+                    self.album_art_label.width(),
+                    self.album_art_label.height(),
+                    Qt.KeepAspectRatio,
+                    Qt.SmoothTransformation
+                )
+                self.album_art_label.setPixmap(scaled_pixmap)
+                self.album_art_label.setText("")  # Clear "No Art"
+                self.album_art_path = url
+            else:
+                print("Image data could not be loaded into QPixmap.")
+                self.album_art_label.setText("No Art")
+                self.album_art_label.setPixmap(QPixmap())  # Clear pixmap
+                self.album_art_path = None
+        except Exception as e:
+            print("Exception while loading album art:", e)
+            self.album_art_label.setText("No Art")
+            self.album_art_label.setPixmap(QPixmap())  # Clear pixmap
+            self.album_art_path = None
 
     def is_youtube_playlist(self, url):
         # Checks to see if URL leads to a youtube playlist
