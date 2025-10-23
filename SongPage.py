@@ -9,6 +9,7 @@ from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 from PIL import Image
 from search import search_song
+from utils import safe_filename
 
 class SongPage(QWidget):
     """
@@ -294,6 +295,7 @@ class SongPage(QWidget):
                 raise ValueError("Please select a destination folder")
 
             filename = self.output_filename.text().strip()
+            filename = safe_filename(filename)
             if not filename:
                 raise ValueError("Please enter an output filename")
 
@@ -306,11 +308,11 @@ class SongPage(QWidget):
             print("Downloaded audio path:", audio_path)
             mp3_path = to_mp3(audio_path, output_mp3_path)
             print("Converted mp3 path:", mp3_path)
-            to_mp3(audio_path, output_mp3_path)
             if not os.path.exists(mp3_path):
                 print("MP3 file does not exist after conversion:", mp3_path)
+                raise FileNotFoundError(f"MP3 file was not created: {mp3_path}")
             print(f'Output MP3 path: {output_mp3_path}')
-            add_metadata(output_mp3_path, metadata)
+            add_metadata(mp3_path, metadata)
 
             if os.path.exists(audio_path):
                 os.remove(audio_path)

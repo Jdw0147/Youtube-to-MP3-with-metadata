@@ -4,10 +4,16 @@ import subprocess # To run ffmpeg
 from yt_dlp import YoutubeDL # To download YouTube Audio
 from mutagen.mp3 import MP3 # To edit MP3 metadata
 from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
+from utils import safe_filename
 
 # Downloading a Youtube video from a link
 def download_youtube_audio(youtube_url, output_folder):
-    output_template = os.path.join(output_folder, "%(title)s.%(ext)s")
+    with YoutubeDL({'quiet': True}) as ydl:
+        info = ydl.extract_info(youtube_url, download=False)
+        title = info.get('title', 'audio')
+        safe_title = safe_filename(title)
+        
+    output_template = os.path.join(output_folder, f"{safe_title}.%(ext)s")
     print(f'Output template: {output_template}')
     ydl_opts = {
         'format': 'bestaudio/best', # Downloading the best audio quality available
@@ -23,17 +29,15 @@ def download_youtube_audio(youtube_url, output_folder):
     # Downloading process
     print("[*] Downloading audio from Youtube...")
     with YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(youtube_url)
-        # This will return the actual file path of the downloaded file
-        downloaded_file = ydl.prepare_filename(info)
-    print("[+] Download complete.")
-    print(f'Downloaded file: {downloaded_file}')
-    return downloaded_file
+        ydl.download([youtube_url])
+        m4a_path = os.path.join(output_folder, f"{safe_title}.m4a")
+        print(f"Downloaded file: {m4a_path}")
+        return m4a_path
 
 # Function that converts the m4a file into an mp3 file
 def to_mp3(input_file, output_file="download.mp3"):
     print("[*] Converting to mp3...")
-    subprocess.run([
+    result = subprocess.run([
         "ffmpeg", "-y", # Overwrite output file if one exists
         "-i", input_file, # Input file
         "-vn", # No video
@@ -41,10 +45,12 @@ def to_mp3(input_file, output_file="download.mp3"):
         "-ac", "2", # Set number of audio channels
         "-b:a", "192k", # Set audio bitrate
         output_file
-    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL # Hides ffmpeg output
+    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE # Hides ffmpeg output
     )
     print(f'Output file: {output_file}')
     print("[+] Conversion complete.")
+    if result.returncode != 0:
+        print("ffmpeg error:", result.stderr.decode())
     return output_file
 
     # Function to add metadata to the mp3 file

@@ -10,10 +10,7 @@ from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 import re
 import yt_dlp
 from search import search_album
-
-def safe_filename(name):
-    # Remove invalid filename characters for Windows
-    return re.sub(r'[\\/*?:"<>|]', "", name).strip() or "untitled"
+from utils import safe_filename
 
 class SongEntry(QGroupBox):
     def __init__(self, song_number, remove_callback):
