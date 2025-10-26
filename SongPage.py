@@ -8,7 +8,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
 from PIL import Image
-from search import search_song
 from utils import safe_filename
 
 class SongPage(QWidget):
@@ -38,10 +37,6 @@ class SongPage(QWidget):
         self.url_field.setPlaceholderText("Enter YouTube URL...")
 
         self.title_field = QLineEdit()
-        # autocomplete list
-        self.autocomplete_list = QListWidget()
-        self.autocomplete_list.setMaximumHeight(100)
-        self.autocomplete_list.hide()
 
 
         self.artist_field = QLineEdit()
@@ -86,9 +81,6 @@ class SongPage(QWidget):
         # =====================
         fields_form = QFormLayout()
         fields_form.addRow("Title:", self.title_field)
-        fields_form.addRow("", self.autocomplete_list)
-        self.title_field.textChanged.connect(self.update_autocomplete)
-        self.autocomplete_list.itemClicked.connect(self.fill_from_autocomplete)
         fields_form.addRow("Artist:", self.artist_field)
         fields_form.addRow("Album:", self.album_field)
         fields_form.addRow("Album Artist:", self.album_artist_field)
@@ -203,62 +195,6 @@ class SongPage(QWidget):
         )
         self.cover_art_label.setPixmap(scaled_pixmap)
 
-    # Autocomplete Logic
-    def update_autocomplete(self, text):
-        self.autocomplete_list.clear()
-        self.autocomplete_results.clear()
-        if not text.strip():
-            self.autocomplete_list.hide()
-            return
-        try:
-            results = search_song(text, self.artist_field.text())
-            if not results:
-                self.autocomplete_list.addItem("No results found")
-            else:
-                for result in results:
-                    display = f"{result['title']} ({result.get('year', '')})"
-                    self.autocomplete_list.addItem(display)
-                    self.autocomplete_results[display] = result
-            self.autocomplete_list.show()
-        except Exception:
-            self.autocomplete_list.addItem("No results found")
-            self.autocomplete_list.show()
-
-    def fill_from_autocomplete(self, item):
-        text = item.text()
-        if text == "No results found":
-            return
-        result = self.autocomplete_results.get(text)
-        if result:
-            self.title_field.setText(result.get('title', ''))
-            self.artist_field.setText(result.get('artist', ''))
-            self.album_field.setText(result.get('release_title', ''))
-            self.album_artist_field.setText(result.get('artist', ''))
-            self.year_field.setText(str(result.get('year', '')))
-            self.genre_field.setText(', '.join(result.get('genre', [])) if result.get('genre') else '')
-            cover_url = result.get('cover_image')
-            if cover_url:
-                self.set_cover_art_from_url(cover_url)
-        self.autocomplete_list.hide()
-
-    def set_cover_art_from_url(self, url):
-        try:
-            import requests
-            from PySide6.QtGui import QImage
-            response = requests.get(url)
-            image = QImage()
-            image.loadFromData(response.content)
-            pixmap = QPixmap.fromImage(image)
-            scaled_pixmap = pixmap.scaled(
-                self.cover_art_label.width(),
-                self.cover_art_label.height(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
-            )
-            self.cover_art_label.setPixmap(scaled_pixmap)
-            self.cover_art_path = url  # Store URL for reference
-        except Exception:
-            pass
 
                 
     # ==========================
