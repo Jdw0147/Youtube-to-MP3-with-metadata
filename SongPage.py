@@ -264,7 +264,7 @@ class SongPage(QWidget):
                 QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
                 audio_path = download_youtube_audio(yt_url, output_path)
             else:
-                audio_path = audio_file_path
+                audio_path = os.path.normpath(audio_file_path)
 
             if not audio_path or not os.path.exists(audio_path):
                 raise FileNotFoundError("Audio file not found. Please check your selection.")
@@ -281,6 +281,8 @@ class SongPage(QWidget):
                 import shutil
                 shutil.copy(audio_path, output_mp3_path)
                 mp3_path = output_mp3_path
+
+            mp3_path = os.path.normpath(mp3_path)
     
             if not os.path.exists(mp3_path):
                 raise FileNotFoundError(f"MP3 file was not created: {mp3_path}")
