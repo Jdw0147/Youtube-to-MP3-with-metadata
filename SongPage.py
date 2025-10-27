@@ -27,7 +27,17 @@ class SongPage(QWidget):
         # =========
         # VARIABLES
         # =========
-        self.autocomplete_results = {}
+
+        self.audio_file_field = QLineEdit()
+        self.audio_file_field.setPlaceholderText("Select audio file...")
+        self.audio_file_field.setReadOnly(True)
+        audio_file_btn = QPushButton("Browse")
+        audio_file_btn.clicked.connect(self.select_audio_file)
+
+        audio_file_layout = QHBoxLayout()
+        audio_file_layout.addWidget(self.audio_file_field)
+        audio_file_layout.addWidget(audio_file_btn)
+
         self.cover_art_path = ""  # Will hold string path to image file
 
         # ===========
@@ -73,8 +83,9 @@ class SongPage(QWidget):
         # TOP SECTION (URL row)
         # ====================
         top_url_layout = QHBoxLayout()
-        top_url_layout.addWidget(QLabel("YouTube URL:"))
-        top_url_layout.addWidget(self.url_field)
+        top_url_layout.addLayout(audio_file_layout, stretch=1)
+        top_url_layout.addWidget(QLabel("YouTube URL:"), alignment=Qt.AlignRight)
+        top_url_layout.addWidget(self.url_field, stretch=2)
 
         # =====================
         # TOP SECTION (cover + 4 fields)
@@ -195,7 +206,15 @@ class SongPage(QWidget):
         )
         self.cover_art_label.setPixmap(scaled_pixmap)
 
-
+    def select_audio_file(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Audio File",
+            "",
+            "Audio Files (*.mp3;*.flac;*.wav;*.m4a;*.aac;*.ogg;*.wma;*.aiff;*.alac);;All Files (*.*)"
+        )
+        if path:
+            self.audio_file_field.setText(path)
                 
     # ==========================
     # OUTPUT FOLDER DIALOG
@@ -211,9 +230,10 @@ class SongPage(QWidget):
     def process(self):
         try:
             yt_url = self.url_field.text().strip()
-            if not yt_url:
-                raise ValueError("Please enter a YouTube URL")
-
+            audio_file_path = self.audio_file_field.text().strip()
+            if not yt_url and not audio_file_path:
+                raise ValueError("Please enter a YouTube URL or select an audio file")
+    
             metadata = {
                 "title": self.title_field.text(),
                 "artist": self.artist_field.text(),
@@ -225,35 +245,56 @@ class SongPage(QWidget):
                 "lyrics": self.lyrics_field.toPlainText().strip(),
                 "cover_art_path": self.cover_art_path,
             }
-
+    
             output_path = self.output_path.text()
             if not output_path:
                 raise ValueError("Please select a destination folder")
-
+    
             filename = self.output_filename.text().strip()
-            filename = safe_filename(filename)
             if not filename:
-                raise ValueError("Please enter an output filename")
-
+                title = self.title_field.text().strip()
+                artist = self.artist_field.text().strip()
+                filename = safe_filename(f"{title} - {artist}")
+            if not filename:
+                raise ValueError("Please enter an output filename or fill in Title and Artist fields")
+    
             output_mp3_path = os.path.join(output_path, f"{filename}.mp3")
+    
+            if yt_url:
+                QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
+                audio_path = download_youtube_audio(yt_url, output_path)
+            else:
+                audio_path = audio_file_path
 
-            # Processing
-            QMessageBox.information(self, "Processing", "Downloading audio from YouTube...")
-            print(f'Output Path: {output_path}\nFilename: {filename}')
-            audio_path = download_youtube_audio(yt_url, output_path)  # <-- Pass both URL and folder
-            print("Downloaded audio path:", audio_path)
-            mp3_path = to_mp3(audio_path, output_mp3_path)
-            print("Converted mp3 path:", mp3_path)
+            if not audio_path or not os.path.exists(audio_path):
+                raise FileNotFoundError("Audio file not found. Please check your selection.")
+    
+            # Convert to mp3 if not already
+            print(f"audio_path: '{audio_path}'")
+            print(f"output_mp3_path: '{output_mp3_path}'")
+            ext = os.path.splitext(audio_path)[1].lower()
+            print(f"ext: '{ext}'")
+            if ext != ".mp3":
+                mp3_path = to_mp3(audio_path, output_mp3_path)
+            else:
+                # Copy original mp3 to new location
+                import shutil
+                shutil.copy(audio_path, output_mp3_path)
+                mp3_path = output_mp3_path
+    
             if not os.path.exists(mp3_path):
-                print("MP3 file does not exist after conversion:", mp3_path)
                 raise FileNotFoundError(f"MP3 file was not created: {mp3_path}")
-            print(f'Output MP3 path: {output_mp3_path}')
+    
+            print(f"mp3_path after copy/convert: '{mp3_path}'")
+            if not os.path.exists(mp3_path):
+                raise FileNotFoundError(f"MP3 file was not created: {mp3_path}")
             add_metadata(mp3_path, metadata)
-
-            if os.path.exists(audio_path):
+    
+            # Remove temp file if downloaded from YouTube
+            if yt_url and os.path.exists(audio_path):
                 os.remove(audio_path)
-
+    
             QMessageBox.information(self, "Success", f"MP3 file saved to:\n{output_mp3_path}")
-
+    
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
