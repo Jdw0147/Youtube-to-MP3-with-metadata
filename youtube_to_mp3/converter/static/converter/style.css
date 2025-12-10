@@ -1,0 +1,16 @@
+/*
+Basic CSS for app.
+*/
+body {
+    font-family: Arial, sans-serif;
+    margin: 2em;
+}
+h1 {
+    color: #333;
+}
+form {
+    background: #f9f9f9;
+    padding: 1em;
+    border-radius: 8px;
+    max-width: 500px;
+}

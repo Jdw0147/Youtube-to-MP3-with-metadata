@@ -1,0 +1,23 @@
+<!--
+Landing page for the converter app.
+Lets user choose Song or Album, then Edit or Download for Song.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube to MP3 Converter</title>
+</head>
+<body>
+    <h1>YouTube to MP3 Converter</h1>
+    <h2>Choose an option:</h2>
+    <div>
+        <h3>Song</h3>
+        <a href="{% url 'song_edit' %}"><button>Edit existing MP3</button></a>
+        <a href="{% url 'song_youtube' %}"><button>Download from YouTube</button></a>
+    </div>
+    <div>
+        <h3>Album</h3>
+        <p>(Coming soon!)</p>
+    </div>
+</body>
+</html>

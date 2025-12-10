@@ -1,0 +1,21 @@
+<!--
+Form for editing metadata of an uploaded MP3 file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit MP3 Metadata</title>
+</head>
+<body>
+    <h1>Edit Existing MP3</h1>
+    {% if success %}
+        <p style="color:green;">Metadata updated! Output file: {{ output_file }}</p>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Metadata</button>
+    </form>
+    <a href="{% url 'home' %}">Back to Home</a>
+</body>
+</html>
