@@ -10,6 +10,7 @@ Form for editing metadata of an uploaded MP3 file.
     <h1>Edit Existing MP3</h1>
     {% if success %}
         <p style="color:green;">Metadata updated! Output file: {{ output_file }}</p>
+        <a href="{% url 'download_file' output_file %}"><button>Download MP3</button></a>
     {% endif %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}

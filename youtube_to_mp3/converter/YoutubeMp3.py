@@ -6,6 +6,7 @@ from mutagen.mp3 import MP3 # To edit MP3 metadata
 from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
 from .utils import safe_filename
 
+
 # Downloading a Youtube video from a link
 def download_youtube_audio(youtube_url, output_folder):
     with YoutubeDL({'quiet': True}) as ydl:
@@ -53,6 +54,15 @@ def to_mp3(input_file, output_file="download.mp3"):
         print("ffmpeg error:", result.stderr.decode())
     return output_file
 
+
+def get_image_mime(img_data):
+    if img_data.startswith(b'\xff\xd8'):
+        return "image/jpeg"
+    elif img_data.startswith(b'\x89PNG\r\n\x1a\n'):
+        return "image/png"
+    else:
+        return "image/jpeg"  # fallback
+    
     # Function to add metadata to the mp3 file
 def add_metadata(mp3_file, metadata):
     print("[*] Adding metadata...")
@@ -76,14 +86,18 @@ def add_metadata(mp3_file, metadata):
     audio.tags.add(USLT(encoding=3, lang='eng', desc='Lyrics', text=metadata["lyrics"]))
 
     # Album Art
-    with open(metadata["cover_art_path"], 'rb') as albumart:
-        audio.tags.add(APIC(
-            encoding=3,
-            mime="image/jpeg",
-            type=3,
-            desc="Cover",
-            data=albumart.read()
-        ))
+    cover_path = metadata.get("cover_art_path")
+    if cover_path and os.path.exists(cover_path):
+        with open(cover_path, 'rb') as albumart:
+            img_data = albumart.read()
+            mime = get_image_mime(img_data)
+            audio.tags.add(APIC(
+                encoding=3,
+                mime=mime,
+                type=3,
+                desc="Cover",
+                data=img_data
+            ))
 
-        audio.save(v2_version=3) # Save the updated mp3 file
-        print("[+] Metadata added.")
+    audio.save(v2_version=3) # Save the updated mp3 file
+    print("[+] Metadata added.")

@@ -8,6 +8,9 @@ from .utils import safe_filename
 import os
 from django.conf import settings
 from django.http import FileResponse
+import threading
+from django.http import Http404
+import shutil
 
 def home(request):
     # Main landing page with Song and Album sections
@@ -24,6 +27,22 @@ def song_edit(request):
             with open(temp_path, 'wb+') as destination:
                 for chunk in mp3_file.chunks():
                     destination.write(chunk)
+
+            # Check extension
+            ext = os.path.splitext(temp_path)[1].lower()
+            output_filename = form.cleaned_data['output_filename'] or safe_filename(
+                f"{form.cleaned_data['title']} - {form.cleaned_data['artist']}"
+            )
+            output_path = os.path.join(settings.MEDIA_ROOT, output_filename + ".mp3")
+
+            if ext != ".mp3":
+                # Convert to mp3
+                from .YoutubeMp3 import to_mp3
+                mp3_path = to_mp3(temp_path, output_path)
+            else:
+                shutil.copy(temp_path, output_path)
+                mp3_path = output_path
+
             # Call your add_metadata function here
             from .YoutubeMp3 import add_metadata
             metadata = {
@@ -44,20 +63,35 @@ def song_edit(request):
                     for chunk in cover.chunks():
                         dest.write(chunk)
                 metadata['cover_art_path'] = cover_path
-            # Determine output filename
-            filename = form.cleaned_data['output_filename'] or safe_filename(
-                f"{metadata['title']} - {metadata['artist']}"
-            )
-            output_path = os.path.join(settings.MEDIA_ROOT, filename + ".mp3")
-            # Copy original file to output path
-            import shutil
-            shutil.copy(temp_path, output_path)
-            add_metadata(output_path, metadata)
-            # Clean up temp files if needed
-            return render(request, 'converter/song_edit.html', {'form': form, 'success': True, 'output_file': filename + ".mp3"})
+
+            add_metadata(mp3_path, metadata)
+            return render(request, 'converter/song_edit.html', {
+                'form': form,
+                'success': True,
+                'output_file': os.path.basename(mp3_path)
+            })
     else:
         form = EditMP3Form()
     return render(request, 'converter/song_edit.html', {'form': form})
+
+def download_file(request, filename):
+    # Serve the file for download
+    file_path = os.path.join(settings.MEDIA_ROOT, filename)
+    if os.path.exists(file_path):
+        response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+        # Schedule file deletion after response is sent
+        def delete_file(path):
+            import time
+            time.sleep(1)  # Wait for the response to finish
+            try:
+                os.remove(path)
+            except Exception:
+                pass
+
+        threading.Thread(target=delete_file, args=(file_path,)).start()
+        return response
+    else:
+        raise Http404("File does not exist")
 
 def song_youtube(request):
     # Download from YouTube and edit metadata
