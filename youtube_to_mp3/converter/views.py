@@ -7,6 +7,7 @@ from .forms import EditMP3Form, YouTubeForm
 from .utils import safe_filename
 import os
 from django.conf import settings
+from django.http import FileResponse
 
 def home(request):
     # Main landing page with Song and Album sections
@@ -24,7 +25,7 @@ def song_edit(request):
                 for chunk in mp3_file.chunks():
                     destination.write(chunk)
             # Call your add_metadata function here
-            from YoutubeMp3 import add_metadata
+            from .YoutubeMp3 import add_metadata
             metadata = {
                 "title": form.cleaned_data['title'],
                 "artist": form.cleaned_data['artist'],
@@ -64,7 +65,7 @@ def song_youtube(request):
         form = YouTubeForm(request.POST, request.FILES)
         if form.is_valid():
             youtube_url = form.cleaned_data['youtube_url']
-            from YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
+            from .YoutubeMp3 import download_youtube_audio, to_mp3, add_metadata
             # Download audio
             audio_path = download_youtube_audio(youtube_url, settings.MEDIA_ROOT)
             # Convert to mp3 if needed
