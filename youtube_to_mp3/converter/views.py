@@ -45,12 +45,13 @@ def song_edit(request):
                 "lyrics": form.cleaned_data['lyrics'],
             }
             
-            mp3_path = process_mp3_with_metadata(
+            mp3_path, temp_files = process_mp3_with_metadata(
                 temp_path,
                 output_filename,
                 metadata,
                 cover_file=form.cleaned_data.get('cover_art')
             )
+            request.session['temp_files'] = list(temp_files)
 
             return render(request, 'converter/song_edit.html', {
                 'form': form,
@@ -85,12 +86,13 @@ def song_youtube(request):
                 "lyrics": form.cleaned_data['lyrics'],
             }
 
-            mp3_path = process_mp3_with_metadata(
+            mp3_path, temp_files = process_mp3_with_metadata(
                 audio_path,
                 output_filename,
                 metadata,
                 cover_file=form.cleaned_data.get('cover_art')
             )
+            request.session['temp_files'] = list(temp_files)
 
             return render(request, 'converter/song_youtube.html', {
                 'form': form,
