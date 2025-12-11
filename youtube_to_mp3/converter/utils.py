@@ -50,7 +50,20 @@ def process_mp3_with_metadata(
         metadata['cover_art_path'] = cover_path
         temp_files.add(cover_path)
     else:
-        metadata['cover_art_path'] = None
+        # Try to extract existing cover art from input_path
+        from mutagen.mp3 import MP3
+        from mutagen.id3 import ID3, APIC
+        audio = MP3(input_path, ID3=ID3)
+        for tag in audio.tags.values():
+            if isinstance(tag, APIC):
+                cover_path = os.path.join(settings.MEDIA_ROOT, "current_cover.jpg")
+                with open(cover_path, "wb") as img_out:
+                    img_out.write(tag.data)
+                metadata['cover_art_path'] = cover_path
+                temp_files.add(cover_path)
+                break
+        else:
+            metadata['cover_art_path'] = None
 
     add_metadata(mp3_path, metadata)
 
@@ -69,19 +82,24 @@ def process_mp3_with_metadata(
 #
 def download_file(request, filename):
     file_path = os.path.join(settings.MEDIA_ROOT, filename)
+    cover_path = os.path.join(settings.MEDIA_ROOT, "current_cover.jpg")
+
     if os.path.exists(file_path):
         response = FileResponse(open(file_path, 'rb'), as_attachment=True)
 
         def delete_temp_files():
             import time
             time.sleep(1)
-            temp_files = request.session.pop('temp_files', [])
-            for f in temp_files:
-                if os.path.exists(f):
-                    try:
-                        os.remove(f)
-                    except Exception:
-                        pass
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+            # Delete the cover art preview file
+            if os.path.exists(cover_path):
+                try:
+                    os.remove(cover_path)
+                except Exception:
+                    pass
 
         threading.Thread(target=delete_temp_files).start()
         return response
