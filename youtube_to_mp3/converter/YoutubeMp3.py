@@ -4,7 +4,7 @@ import subprocess # To run ffmpeg
 from yt_dlp import YoutubeDL # To download YouTube Audio
 from mutagen.mp3 import MP3 # To edit MP3 metadata
 from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, APIC, TRCK, USLT # ID3 tag types
-from .utils import safe_filename
+from .filename_utils import safe_filename
 
 
 # Downloading a Youtube video from a link
