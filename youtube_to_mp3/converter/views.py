@@ -81,11 +81,12 @@ def song_edit(request):
                     "track_number": form.cleaned_data['track_number'],
                     "lyrics": form.cleaned_data['lyrics'],
                 }
+                cover_file = request.FILES.get('cover_art')
                 mp3_path, temp_files = process_mp3_with_metadata(
                     temp_path,
                     output_filename,
                     metadata,
-                    cover_file=form.cleaned_data.get('cover_art')
+                    cover_file=cover_file
                 )
 
                 request.session['temp_files'] = list(temp_files)

@@ -87,12 +87,13 @@ def add_metadata(mp3_file, metadata):
 
     # Album Art
     cover_path = metadata.get("cover_art_path")
+    print("DEBUG: add_metadata cover_path =", cover_path)
     if cover_path and os.path.exists(cover_path):
-        # Remove all existing cover art
+        print("DEBUG: Embedding cover art from", cover_path)
+        # Remove all existing cover art and add new one
         audio.tags.delall('APIC')
         with open(cover_path, 'rb') as albumart:
             img_data = albumart.read()
-            # Guess MIME type (improve as needed)
             if cover_path.lower().endswith('.png'):
                 mime = 'image/png'
             else:
@@ -106,4 +107,7 @@ def add_metadata(mp3_file, metadata):
             ))
 
     audio.save()
+    print("DEBUG: All tags after save:")
+    for tag in audio.tags.values():
+        print(tag)
     print("[+] Metadata added.")

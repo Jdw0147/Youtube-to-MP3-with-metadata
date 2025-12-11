@@ -43,7 +43,7 @@ def process_mp3_with_metadata(
             mp3_path = output_path
 
     if cover_file:
-        cover_path = os.path.join(settings.MEDIA_ROOT, cover_file.name)
+        cover_path = os.path.join(settings.MEDIA_ROOT, output_filename + "_cover.jpg")
         with open(cover_path, 'wb+') as dest:
             for chunk in cover_file.chunks():
                 dest.write(chunk)
@@ -51,8 +51,6 @@ def process_mp3_with_metadata(
         temp_files.add(cover_path)
     else:
         # Try to extract existing cover art from input_path
-        from mutagen.mp3 import MP3
-        from mutagen.id3 import ID3, APIC
         audio = MP3(input_path, ID3=ID3)
         for tag in audio.tags.values():
             if isinstance(tag, APIC):
@@ -66,13 +64,6 @@ def process_mp3_with_metadata(
             metadata['cover_art_path'] = None
 
     add_metadata(mp3_path, metadata)
-
-    if metadata['cover_art_path'] and os.path.exists(metadata['cover_art_path']):
-        try:
-            os.remove(metadata['cover_art_path'])
-            temp_files.discard(metadata['cover_art_path'])
-        except Exception:
-            pass
 
     return mp3_path, temp_files
 
@@ -95,11 +86,11 @@ def download_file(request, filename):
             except Exception:
                 pass
             # Delete the cover art preview file
-            if os.path.exists(cover_path):
-                try:
-                    os.remove(cover_path)
-                except Exception:
-                    pass
+            #if os.path.exists(cover_path):
+                #try:
+                    #os.remove(cover_path)
+                #except Exception:
+                    #pass
 
         threading.Thread(target=delete_temp_files).start()
         return response
@@ -129,11 +120,11 @@ def get_mp3_metadata(mp3_path):
         cover_art_path = None
         for tag in audio.tags.values():
             if isinstance(tag, APIC):
-                cover_art_path = os.path.join(settings.MEDIA_ROOT, "current_cover.jpg")
+                cover_art_path = os.path.join(settings.MEDIA_ROOT, os.path.splitext(os.path.basename(mp3_path))[0] + "_cover.jpg")
                 with open(cover_art_path, "wb") as img_out:
                     img_out.write(tag.data)
                 # Save relative path for template
-                data['cover_art_url'] = "current_cover.jpg"
+                data['cover_art_url'] = os.path.basename(cover_art_path)
                 break
         if not 'cover_art_url' in data:
             data['cover_art_url'] = None

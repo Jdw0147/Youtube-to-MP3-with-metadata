@@ -32,7 +32,7 @@ Form for editing metadata of an uploaded MP3 file.
 
         <div class="cover-art-preview" id="cover-art-preview">
             {% if cover_art_url %}
-                <img src="{{ MEDIA_URL }}{{ cover_art_url }}" id="cover-art-img" alt="Cover Art">
+                <img src="{{ MEDIA_URL }}{{ cover_art_url }}" alt="Cover Art">
             {% else %}
                 <span class="cover-art-placeholder" id="cover-art-placeholder" >No cover art</span>
             {% endif %}
