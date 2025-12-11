@@ -88,9 +88,11 @@ def add_metadata(mp3_file, metadata):
     # Album Art
     cover_path = metadata.get("cover_art_path")
     if cover_path and os.path.exists(cover_path):
+        # Remove existing cover art
+        audio.tags.delall('APIC')
         with open(cover_path, 'rb') as albumart:
             img_data = albumart.read()
-            mime = get_image_mime(img_data)
+            mime = "image/jpeg"  # or detect from file
             audio.tags.add(APIC(
                 encoding=3,
                 mime=mime,
@@ -99,5 +101,5 @@ def add_metadata(mp3_file, metadata):
                 data=img_data
             ))
 
-    audio.save(v2_version=3) # Save the updated mp3 file
+    audio.save()
     print("[+] Metadata added.")

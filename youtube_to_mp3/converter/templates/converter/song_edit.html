@@ -1,22 +1,52 @@
 <!--
 Form for editing metadata of an uploaded MP3 file.
 -->
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="{% static 'converter/style.css' %}">
     <title>Edit MP3 Metadata</title>
 </head>
 <body>
-    <h1>Edit Existing MP3</h1>
+    <h1>Step 2: Edit Metadata</h1>
+    {% if uploaded_file %}
+        <p><strong>Uploaded file:</strong> {{ uploaded_file }}</p>
+    {% endif %}
     {% if success %}
         <p style="color:green;">Metadata updated! Output file: {{ output_file }}</p>
         <a href="{% url 'download_file' output_file %}"><button>Download MP3</button></a>
     {% endif %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
+        {{ form.title.label_tag }} {{ form.title }}<br>
+        {{ form.artist.label_tag }} {{ form.artist }}<br>
+        {{ form.album.label_tag }} {{ form.album }}<br>
+        {{ form.album_artist.label_tag }} {{ form.album_artist }}<br>
+        {{ form.year.label_tag }} {{ form.year }}<br>
+        {{ form.genre.label_tag }} {{ form.genre }}<br>
+        {{ form.track_number.label_tag }} {{ form.track_number }}<br>
+        {{ form.lyrics.label_tag }} {{ form.lyrics }}<br>
+        {{ form.cover_art.label_tag }} {{ form.cover_art }}<br>
+
+        <div class="cover-art-preview" id="cover-art-preview">
+            {% if cover_art_url %}
+                <img src="{{ MEDIA_URL }}{{ cover_art_url }}" id="cover-art-img" alt="Cover Art">
+            {% else %}
+                <span class="cover-art-placeholder" id="cover-art-placeholder" >No cover art</span>
+            {% endif %}
+        </div>
+
+        {{ form.output_filename.label_tag }} {{ form.output_filename }}<br>
+
         <button type="submit">Save Metadata</button>
     </form>
+    <form method="get" action="{% url 'song_edit' %}">
+        <button type="submit" name="back" value="1">Back</button>
+    </form>
     <a href="{% url 'home' %}">Back to Home</a>
+
+    <script src="{% static 'converter/cover_preview.js' %}"></script>
 </body>
 </html>

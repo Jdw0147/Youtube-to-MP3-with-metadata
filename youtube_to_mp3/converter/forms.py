@@ -3,8 +3,10 @@ Defines forms for editing MP3 metadata and downloading from YouTube.
 """
 from django import forms
 
-class EditMP3Form(forms.Form):
+class UploadMP3Form(forms.Form):
     mp3_file = forms.FileField(label="Upload MP3 file")
+
+class EditMP3Form(forms.Form):
     title = forms.CharField(max_length=255, required=False)
     artist = forms.CharField(max_length=255, required=False)
     album = forms.CharField(max_length=255, required=False)

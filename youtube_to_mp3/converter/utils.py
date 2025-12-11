@@ -6,6 +6,8 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from .YoutubeMp3 import to_mp3, add_metadata
 from .filename_utils import safe_filename
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, TIT2, TPE1, APIC, TPE2, TALB, TDRC, TCON, TRCK, USLT
 
 
 ##################################
@@ -29,12 +31,16 @@ def process_mp3_with_metadata(
     # Track all temp files for cleanup
     temp_files = set([input_path, output_path]) 
 
-    if convert_if_needed and ext != ".mp3":
-        mp3_path = to_mp3(input_path, output_path)
-        temp_files.add(mp3_path)
+    # If input and output are the same file, don't copy—just update metadata in place
+    if os.path.abspath(input_path) == os.path.abspath(output_path):
+        mp3_path = input_path
     else:
-        shutil.copy(input_path, output_path)
-        mp3_path = output_path
+        if convert_if_needed and ext != ".mp3":
+            mp3_path = to_mp3(input_path, output_path)
+            temp_files.add(mp3_path)
+        else:
+            shutil.copy(input_path, output_path)
+            mp3_path = output_path
 
     if cover_file:
         cover_path = os.path.join(settings.MEDIA_ROOT, cover_file.name)
@@ -81,3 +87,39 @@ def download_file(request, filename):
         return response
     else:
         raise Http404("File does not exist")
+    
+
+#
+# Function to getmp3 file data when reading a file to edit
+#
+def get_mp3_metadata(mp3_path):
+    """
+    Extracts metadata from an MP3 file and returns a dict suitable for initializing the form.
+    """
+    data = {}
+    try:
+        audio = MP3(mp3_path, ID3=ID3)
+        data['title'] = audio.tags.get('TIT2', [''])[0] if audio.tags.get('TIT2') else ''
+        data['artist'] = audio.tags.get('TPE1', [''])[0] if audio.tags.get('TPE1') else ''
+        data['album'] = audio.tags.get('TALB', [''])[0] if audio.tags.get('TALB') else ''
+        data['album_artist'] = audio.tags.get('TPE2', [''])[0] if audio.tags.get('TPE2') else ''
+        data['year'] = str(audio.tags.get('TDRC', [''])[0]) if audio.tags.get('TDRC') else ''
+        data['genre'] = audio.tags.get('TCON', [''])[0] if audio.tags.get('TCON') else ''
+        data['track_number'] = audio.tags.get('TRCK', [''])[0] if audio.tags.get('TRCK') else ''
+        data['lyrics'] = audio.tags.get('USLT::eng', USLT(encoding=3, text='')).text if audio.tags.get('USLT::eng') else ''
+        # Extract cover art
+        cover_art_path = None
+        for tag in audio.tags.values():
+            if isinstance(tag, APIC):
+                cover_art_path = os.path.join(settings.MEDIA_ROOT, "current_cover.jpg")
+                with open(cover_art_path, "wb") as img_out:
+                    img_out.write(tag.data)
+                # Save relative path for template
+                data['cover_art_url'] = "current_cover.jpg"
+                break
+        if not 'cover_art_url' in data:
+            data['cover_art_url'] = None
+    except Exception:
+        # If file is not a valid MP3 or has no tags, leave fields blank
+        pass
+    return data
