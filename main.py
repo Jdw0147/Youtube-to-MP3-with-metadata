@@ -107,3 +107,5 @@ if __name__ == "__main__":
     window.setFixedSize(700, 700)
     window.show()
     sys.exit(app.exec())
+    
+    #Treybaby DJ oh yeah music party time
